@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'navbar.dart';
 import 'dummy_data.dart';
+import 'identification.dart';
 
 class FloraHomeScreen extends StatefulWidget {
   const FloraHomeScreen({super.key});
@@ -102,40 +103,56 @@ class _FloraHomeScreenState extends State<FloraHomeScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: FloraHomeScreen.neonLime,
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.camera_alt_outlined, color: Colors.black, size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Potret & Identifikasi',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 14,
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const IdentificationScreen(),
+                                    )
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: FloraHomeScreen.neonLime,
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(Icons.camera_alt_outlined, color: Colors.black, size: 20),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Potret & Identifikasi',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 14,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              
-                              Container(
-                                width: 46,
-                                height: 46,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha:0.12),
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: const Icon(
-                                  Icons.photo_library_outlined,
-                                  color: Colors.white,
-                                  size: 20,
+                              GestureDetector(
+                                onTap: (){
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => IdentificationScreen(),),
+                                  );
+                                },
+                                child: Container(
+                                  width: 46,
+                                  height: 46,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha:0.12),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: const Icon(
+                                    Icons.photo_library_outlined,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                             ],
@@ -162,7 +179,7 @@ class _FloraHomeScreenState extends State<FloraHomeScreen> {
                       Row(
                         children: [
                           Text(
-                            '76 →',
+                            '75 →',
                             style: TextStyle(
                               fontFamily: 'monospace',
                               fontSize: 11,

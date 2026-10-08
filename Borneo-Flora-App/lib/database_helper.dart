@@ -51,6 +51,6 @@ class DatabseHelper {
   Future<Database> get databse async {
     if (_database != null) return _database!;
     _database = await _initDB('borneo_flora.db');
-    return _databse!;1
+    return _databse!;
   }
 }

@@ -31,6 +31,8 @@ class IdentificationScreen extends StatelessWidget {
                     image: controller.image,
                     inferenceTime: controller.inferenceTime,
                     onBack: controller.reset,
+                    isSaved: controller.isCurrentSaved,
+                    onToggleSaved: controller.toggleSaved,
                   )
                 : CaptureView(
                     key: const ValueKey('capture'),

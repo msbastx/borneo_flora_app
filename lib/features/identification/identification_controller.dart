@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../data/flora_repository.dart';
+import '../../data/history/identification_history_repository.dart';
+import '../../data/history/identification_record.dart';
+import '../../data/history/prefs_history_repository.dart';
 import 'identification_config.dart';
 import 'models/confidence_level.dart';
 import 'models/flora_prediction.dart';
@@ -19,13 +22,16 @@ class IdentificationController extends ChangeNotifier {
     FloraClassifier? classifier,
     ImagePicker? picker,
     FloraRepository? repository,
+    IdentificationHistoryRepository? history,
   })  : _classifier = classifier ?? FloraClassifier(),
         _picker = picker ?? ImagePicker(),
-        _repository = repository ?? FloraRepository();
+        _repository = repository ?? FloraRepository(),
+        _history = history ?? PrefsHistoryRepository();
 
   final FloraClassifier _classifier;
   final ImagePicker _picker;
   final FloraRepository _repository;
+  final IdentificationHistoryRepository _history;
 
   IdentificationStatus _status = IdentificationStatus.loadingModel;
   IdentificationSource _source = IdentificationSource.camera;
@@ -34,11 +40,18 @@ class IdentificationController extends ChangeNotifier {
   File? _recentImage;
   List<IdentifiedFlora> _results = const [];
   Duration? _inferenceTime;
+  IdentificationRecord? _record;
   String? _errorMessage;
   bool _loadStarted = false;
   bool _disposed = false;
 
   IdentificationStatus get status => _status;
+
+  /// Riwayat dipakai bersama layar Riwayat.
+  IdentificationHistoryRepository get history => _history;
+
+  /// Apakah hasil yang sedang tampil sudah ditandai Simpan.
+  bool get isCurrentSaved => _record?.isSaved ?? false;
   IdentificationSource get source => _source;
   CameraDevice get cameraDevice => _cameraDevice;
 
@@ -71,6 +84,49 @@ class IdentificationController extends ChangeNotifier {
 
   /// Hasil dianggap dikenali bila probabilitas teratas melewati ambang.
   bool get isConfident => confidenceLevel != ConfidenceLevel.low;
+
+  /// Memulihkan satu baris riwayat menjadi daftar hasil yang siap ditampilkan.
+  List<IdentifiedFlora> resolveRecord(IdentificationRecord record) {
+    final List<RecordCandidate> candidates = record.candidates.isEmpty
+        ? [
+            RecordCandidate(
+              aiKey: -1,
+              label: record.predictedLabel,
+              probability: record.confidence,
+            ),
+          ]
+        : record.candidates;
+
+    return [
+      for (final RecordCandidate c in candidates)
+        IdentifiedFlora(
+          prediction: FloraPrediction(
+            index: c.aiKey,
+            label: c.label,
+            probability: c.probability,
+            logit: 0,
+          ),
+          item: _repository.findByScientificName(c.label),
+        ),
+    ];
+  }
+
+  /// Tombol Simpan pada layar hasil.
+  Future<void> toggleSaved() async {
+    final IdentificationRecord? current = _record;
+    if (current == null) return;
+
+    final IdentificationRecord next = current.copyWith(isSaved: !current.isSaved);
+    _record = next;
+    notifyListeners();
+    try {
+      await _history.update(next);
+    } catch (e) {
+      debugPrint('Gagal menyimpan penanda: $e');
+      _record = current;
+      notifyListeners();
+    }
+  }
 
   /// Aman dipanggil berulang. Model hanya dimuat sekali.
   Future<void> loadModel() async {
@@ -116,6 +172,7 @@ class IdentificationController extends ChangeNotifier {
     _image = null;
     _results = const [];
     _inferenceTime = null;
+    _record = null;
     _errorMessage = null;
     _setStatus(_classifier.isLoaded
         ? IdentificationStatus.ready
@@ -132,6 +189,7 @@ class IdentificationController extends ChangeNotifier {
       );
       if (picked == null) return;
 
+      final DateTime capturedAt = DateTime.now();
       _image = File(picked.path);
       _recentImage = _image;
       _results = const [];
@@ -152,12 +210,44 @@ class IdentificationController extends ChangeNotifier {
             item: _repository.findByScientificName(p.label),
           ),
       ];
+      // Hanya hasil yang dikenali yang masuk riwayat. Citra yang tidak dikenali
+      // tidak disimpan, sesuai teks pada popup "tidak dikenali".
+      _record = (_results.isNotEmpty && isConfident)
+          ? await _recordResult(capturedAt)
+          : null;
       _setStatus(IdentificationStatus.success);
     } on ClassificationException catch (e) {
       _fail(e.message);
     } catch (e) {
       debugPrint('Error saat identifikasi: $e');
       _fail('Gagal memproses gambar');
+    }
+  }
+
+  Future<IdentificationRecord?> _recordResult(DateTime capturedAt) async {
+    final IdentifiedFlora top = _results.first;
+    try {
+      return await _history.add(
+        IdentificationRecord(
+          predictedLabel: top.prediction.label,
+          confidence: top.prediction.probability,
+          candidates: [
+            for (final IdentifiedFlora r in _results)
+              RecordCandidate(
+                aiKey: r.prediction.index,
+                label: r.prediction.label,
+                probability: r.prediction.probability,
+              ),
+          ],
+          modelVersion: IdentificationConfig.modelVersion,
+          imagePath: _image!.path,
+          capturedAt: capturedAt,
+          createdAt: capturedAt,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Gagal merekam riwayat: $e');
+      return null;
     }
   }
 

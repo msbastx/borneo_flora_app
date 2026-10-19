@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/utils/number_format.dart';
+import '../../../core/utils/format.dart';
 import '../identification_config.dart';
 import '../identification_theme.dart';
 import '../models/confidence_level.dart';
@@ -27,7 +27,7 @@ class ConfidenceCard extends StatelessWidget {
     final Duration? time = inferenceTime;
     final String version = 'MODEL ${IdentificationConfig.modelVersion}';
     if (time == null) return version;
-    final String seconds = formatDecimalId(time.inMilliseconds / 1000);
+    final String seconds = formatDecimal(time.inMilliseconds / 1000);
     return '$version · $seconds DETIK';
   }
 

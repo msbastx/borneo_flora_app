@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../core/theme/app_theme.dart';
 import '../features/home/home_screen.dart';
+import '../features/home/flora_index_screen.dart';
+import '../features/guide/capture_guide_screen.dart';
+import '../features/history/history_screen.dart';
 import '../features/identification/identification_controller.dart';
 import '../features/identification/identification_screen.dart';
 import '../features/identification/identification_theme.dart';
@@ -42,6 +45,67 @@ class _AppShellState extends State<AppShell> {
     _goTo(_identTab);
   }
 
+  Future<void> _onMenuSelected(String value) async {
+    switch (value) {
+      case 'guide':
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => CaptureGuideScreen(
+              onFinish: () => Navigator.of(context).pop(),
+              onSkip: () => Navigator.of(context).pop(),
+            ),
+          ),
+        );
+        break;
+      case 'history':
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => HistoryScreen(
+              repository: _ident.history,
+              resolve: _ident.resolveRecord,
+            ),
+          ),
+        );
+        break;
+      case 'settings':
+        await showModalBottomSheet<void>(
+          context: context,
+          showDragHandle: true,
+          backgroundColor: const Color(0xFFFAF5FA),
+          builder: (context) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text('Pengaturan', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.darkGreen)),
+                  SizedBox(height: 8),
+                  Text('Pengaturan aplikasi', style: TextStyle(fontWeight: FontWeight.w700)),
+                  SizedBox(height: 4),
+                  Text('Versi prototipe: preferensi akun dan sinkronisasi belum tersedia.'),
+                  SizedBox(height: 16),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.privacy_tip_outlined, color: AppColors.darkGreen),
+                    title: Text('Privasi'),
+                    subtitle: Text('Foto diproses oleh fitur identifikasi lokal pada versi ini.'),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.info_outline, color: AppColors.darkGreen),
+                    title: Text('Tentang aplikasi'),
+                    subtitle: Text('Biodiversitas Borneo · Prototipe identifikasi flora Kalimantan'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+        break;
+    }
+  }
+
   /// Tombol Kembali: tutup hasil dulu, lalu pulang ke tab Home.
   void _handleBack() {
     if (_index == _identTab && _ident.showsResult) {
@@ -69,12 +133,10 @@ class _AppShellState extends State<AppShell> {
                   _openIdentification(IdentificationSource.camera),
               onOpenGallery: () =>
                   _openIdentification(IdentificationSource.gallery),
+              onMenuSelected: _onMenuSelected,
             ),
             IdentificationScreen(controller: _ident),
-            const ComingSoonTab(
-              title: 'Indeks Flora',
-              icon: Icons.menu_book_outlined,
-            ),
+            const FloraIndexScreen(),
             const ComingSoonTab(
               title: 'Peta Sebaran',
               icon: Icons.map_outlined,

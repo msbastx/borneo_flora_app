@@ -21,6 +21,7 @@ class ResultView extends StatelessWidget {
     required this.onBack,
     required this.isSaved,
     required this.onToggleSaved,
+    required this.onRequestVerification,
     this.image,
     this.inferenceTime,
   });
@@ -33,6 +34,7 @@ class ResultView extends StatelessWidget {
   final VoidCallback onBack;
   final bool isSaved;
   final VoidCallback onToggleSaved;
+  final VoidCallback onRequestVerification;
 
   void _comingSoon(BuildContext context, String feature) {
     ScaffoldMessenger.of(context)
@@ -73,8 +75,7 @@ class ResultView extends StatelessWidget {
                       ResultActions(
                         isSaved: isSaved,
                         onToggleSaved: onToggleSaved,
-                        onRequestVerification: () =>
-                            _comingSoon(context, 'Permintaan verifikasi'),
+                        onRequestVerification: onRequestVerification,
                       ),
                       const SizedBox(height: 24),
                       if (candidates.isNotEmpty)

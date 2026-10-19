@@ -6,6 +6,9 @@ import 'package:flutter/services.dart';
 import '../../data/history/identification_record.dart';
 import '../identification/identification_theme.dart';
 import '../identification/models/confidence_level.dart';
+import '../identification/identification_config.dart';
+import '../report/widgets/unknown_species_sheet.dart';
+import '../report/widgets/report_sheet_parts.dart';
 import '../identification/widgets/result_view.dart';
 import 'history_controller.dart';
 
@@ -44,6 +47,33 @@ class HistoryDetailScreen extends StatelessWidget {
               onBack: () => Navigator.of(context).pop(),
               isSaved: record.isSaved,
               onToggleSaved: () => history.toggleSaved(record),
+              onRequestVerification: () async {
+                final decision = await showReportSheet(
+                  context,
+                  UnknownSpeciesSheet(
+                    topConfidence: record.confidence,
+                    threshold: IdentificationConfig.confidenceThreshold,
+                    catalogCount: 75,
+                    capturedAt: record.capturedAt,
+                    imagePath: record.imagePath,
+                    imageSizeBytes: await File(record.imagePath).length(),
+                    latitude: record.latitude,
+                    longitude: record.longitude,
+                  ),
+                );
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        decision.send
+                            ? 'Pilihan laporan dicatat, tetapi pengiriman ke server belum diimplementasikan.'
+                            : 'Laporan dibatalkan.',
+                      ),
+                    ),
+                  );
+              },
             );
           },
         ),

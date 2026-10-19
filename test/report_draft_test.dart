@@ -1,11 +1,11 @@
 // ignore_for_file: avoid_relative_lib_imports
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../lib/core/utils/format.dart';
-import '../../../lib/core/utils/uuid_v4.dart';
-import '../../../lib/features/report/models/report_decision.dart';
-import '../../../lib/features/report/models/report_draft.dart';
-import '../../../lib/features/report/services/coordinate_approximator.dart';
+import 'package:untitled/core/utils/format.dart';
+import 'package:untitled/core/utils/uuid_v4.dart';
+import 'package:untitled/features/report/models/report_decision.dart';
+import 'package:untitled/features/report/models/report_draft.dart';
+import 'package:untitled/features/report/services/coordinate_approximator.dart';
 
 void main() {
   group('CoordinateApproximator', () {

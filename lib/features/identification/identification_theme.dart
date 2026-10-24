@@ -19,6 +19,7 @@ class IdentColors {
   static const Color lime = AppColors.neonLime;
   static const Color onLime = Color(0xFF14241A);
   static const Color amber = Color(0xFFF2B84B);
+  static const Color danger = Color(0xFFC62828);
 
   // Teks di permukaan gelap
   static const Color bodyOnDark = Color(0xFFB9C7BC);

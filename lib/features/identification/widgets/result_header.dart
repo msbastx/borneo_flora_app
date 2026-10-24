@@ -7,6 +7,7 @@ import '../identification_theme.dart';
 import '../models/confidence_level.dart';
 import '../models/identified_flora.dart';
 import 'confidence_card.dart';
+import 'square_icon_button.dart';
 
 /// Bagian gelap di atas layar hasil: bilah atas, citra pengguna,
 /// nama spesies, dan kartu keyakinan.
@@ -118,7 +119,7 @@ class _TopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _SquareIconButton(
+        SquareIconButton(
           icon: Icons.arrow_back,
           label: 'Kembali',
           onTap: onBack,
@@ -128,45 +129,12 @@ class _TopBar extends StatelessWidget {
             child: Text('HASIL IDENTIFIKASI', style: IdentText.label()),
           ),
         ),
-        _SquareIconButton(
+        SquareIconButton(
           icon: Icons.ios_share,
           label: 'Bagikan',
           onTap: onShare,
         ),
       ],
-    );
-  }
-}
-
-class _SquareIconButton extends StatelessWidget {
-  const _SquareIconButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: Material(
-        color: Colors.white.withValues(alpha: 0.1),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: SizedBox(
-            width: 40,
-            height: 40,
-            child: Icon(icon, color: Colors.white, size: 20),
-          ),
-        ),
-      ),
     );
   }
 }

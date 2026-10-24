@@ -6,11 +6,13 @@ import '../identification_theme.dart';
 class ResultActions extends StatelessWidget {
   const ResultActions({
     super.key,
-    required this.onSave,
+    required this.isSaved,
+    required this.onToggleSaved,
     required this.onRequestVerification,
   });
 
-  final VoidCallback onSave;
+  final bool isSaved;
+  final VoidCallback onToggleSaved;
   final VoidCallback onRequestVerification;
 
   @override
@@ -19,10 +21,10 @@ class ResultActions extends StatelessWidget {
       children: [
         Expanded(
           child: _ActionButton(
-            label: 'Simpan',
-            icon: Icons.bookmark_add_outlined,
+            label: isSaved ? 'Tersimpan' : 'Simpan',
+            icon: isSaved ? Icons.bookmark : Icons.bookmark_add_outlined,
             filled: true,
-            onTap: onSave,
+            onTap: onToggleSaved,
           ),
         ),
         const SizedBox(width: 12),

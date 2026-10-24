@@ -19,6 +19,9 @@ class ResultView extends StatelessWidget {
     required this.isConfident,
     required this.confidence,
     required this.onBack,
+    required this.isSaved,
+    required this.onToggleSaved,
+    required this.onRequestVerification,
     this.image,
     this.inferenceTime,
   });
@@ -29,6 +32,9 @@ class ResultView extends StatelessWidget {
   final File? image;
   final Duration? inferenceTime;
   final VoidCallback onBack;
+  final bool isSaved;
+  final VoidCallback onToggleSaved;
+  final VoidCallback onRequestVerification;
 
   void _comingSoon(BuildContext context, String feature) {
     ScaffoldMessenger.of(context)
@@ -67,9 +73,9 @@ class ResultView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ResultActions(
-                        onSave: () => _comingSoon(context, 'Simpan'),
-                        onRequestVerification: () =>
-                            _comingSoon(context, 'Permintaan verifikasi'),
+                        isSaved: isSaved,
+                        onToggleSaved: onToggleSaved,
+                        onRequestVerification: onRequestVerification,
                       ),
                       const SizedBox(height: 24),
                       if (candidates.isNotEmpty)

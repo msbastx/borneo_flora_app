@@ -1,4 +1,4 @@
-import '../../../core/utils/number_format.dart';
+import '../../../core/utils/format.dart';
 
 /// Satu hasil prediksi untuk satu kelas flora.
 class FloraPrediction {
@@ -21,7 +21,7 @@ class FloraPrediction {
   double get percent => probability * 100;
 
   /// Angka saja dengan koma desimal, contoh "82,3".
-  String get percentNumber => formatDecimalId(percent);
+  String get percentNumber => formatDecimal(percent);
 
   /// Contoh "82,3%".
   String get percentLabel => '$percentNumber%';

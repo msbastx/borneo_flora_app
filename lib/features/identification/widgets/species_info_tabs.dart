@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../identification_theme.dart';
 import '../models/identified_flora.dart';
+import 'pill_tab_bar.dart';
 
 enum _InfoTab {
   summary('RINGKASAN'),
@@ -38,78 +39,18 @@ class _SpeciesInfoTabsState extends State<SpeciesInfoTabs> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _TabBar(selected: _tab, onChanged: (t) => setState(() => _tab = t)),
+        PillTabBar<_InfoTab>(
+          values: _InfoTab.values,
+          selected: _tab,
+          labelOf: (t) => t.label,
+          onChanged: (t) => setState(() => _tab = t),
+        ),
         const SizedBox(height: 20),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
-          // Ganti 'alignment' dengan 'layoutBuilder'
-          layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
-            return Stack(
-              alignment: Alignment.topLeft, // Letakkan alignment di sini
-              children: <Widget>[
-                ...previousChildren,
-              if (currentChild != null) currentChild,
-            ],
-           );
-          },
           child: KeyedSubtree(key: ValueKey(_tab), child: _panel()),
-      ),
-    ]);
-  }
-}
-
-class _TabBar extends StatelessWidget {
-  const _TabBar({required this.selected, required this.onChanged});
-
-  final _InfoTab selected;
-  final ValueChanged<_InfoTab> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: IdentColors.tabTrack,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        children: [
-          for (final _InfoTab t in _InfoTab.values)
-            Expanded(
-              child: Semantics(
-                button: true,
-                selected: t == selected,
-                label: t.label,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => onChanged(t),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: t == selected
-                          ? IdentColors.background
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      t.label,
-                      style: IdentText.label(
-                        color: t == selected
-                            ? IdentColors.lime
-                            : const Color(0xFF5A5F55),
-                        size: 10,
-                        weight: FontWeight.w700,
-                        spacing: 1.4,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

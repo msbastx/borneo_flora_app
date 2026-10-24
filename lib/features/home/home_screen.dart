@@ -14,10 +14,12 @@ class FloraHomeScreen extends StatelessWidget {
     super.key,
     required this.onOpenCamera,
     required this.onOpenGallery,
+    required this.onMenuSelected,
   });
 
   final VoidCallback onOpenCamera;
   final VoidCallback onOpenGallery;
+  final ValueChanged<String> onMenuSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +33,7 @@ class FloraHomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const HomeHeader(),
+                  HomeHeader(onMenuSelected: onMenuSelected),
                   const SizedBox(height: 24),
                   const Text(
                     'Apa yang\nanda temukan\nhari ini?',

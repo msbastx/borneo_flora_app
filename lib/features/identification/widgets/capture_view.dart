@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../guide/capture_guide_screen.dart';
+import '../../history/history_screen.dart';
 import '../identification_controller.dart';
 import '../identification_theme.dart';
 import 'capture_controls.dart';
@@ -24,6 +25,17 @@ class CaptureView extends StatelessWidget {
     );
   }
 
+  void _openHistory(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => HistoryScreen(
+          repository: controller.history,
+          resolve: controller.resolveRecord,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Saat navbar melayang di shell, padding bawah sudah memuat tingginya.
@@ -40,16 +52,33 @@ class CaptureView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('IDENTIFIKASI FLORA', style: IdentText.label()),
-                IconButton(
-                  onPressed: () => _openGuide(context),
-                  tooltip: 'Panduan pengambilan citra',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: const Icon(
-                    Icons.help_outline,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () => _openHistory(context),
+                      tooltip: 'Riwayat identifikasi',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(
+                        Icons.history,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    IconButton(
+                      onPressed: () => _openGuide(context),
+                      tooltip: 'Panduan pengambilan citra',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(
+                        Icons.help_outline,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

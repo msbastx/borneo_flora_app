@@ -5,9 +5,6 @@ import 'identification_controller.dart';
 import 'widgets/capture_view.dart';
 import 'widgets/result_view.dart';
 
-/// Layar tab Identifikasi. Berganti antara tahap pengambilan citra dan
-/// tahap hasil mengikuti state controller. Controller dimiliki pemanggil
-/// (AppShell), sehingga state tidak hilang saat berpindah tab.
 class IdentificationScreen extends StatelessWidget {
   const IdentificationScreen({super.key, required this.controller});
 

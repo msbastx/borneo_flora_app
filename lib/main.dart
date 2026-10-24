@@ -7,33 +7,30 @@ import 'features/guide/capture_guide_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final bool seenGuide = await AppPrefs.hasSeenGuide();
-  runApp(BiodiversitasBorneoApp(seenGuide: seenGuide));
+  runApp(FloraApp(seenGuide: seenGuide));
 }
 
-class BiodiversitasBorneoApp extends StatelessWidget {
-  const BiodiversitasBorneoApp({super.key, required this.seenGuide});
+class FloraApp extends StatelessWidget {
+  const FloraApp({super.key, required this.seenGuide});
 
   final bool seenGuide;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Biodiversitas Borneo',
+      title: 'Flora Borneo',
       debugShowCheckedModeBanner: false,
-      // Pertahankan theme milik proyekmu di sini.
       home: seenGuide ? const AppShell() : const _FirstLaunchGuide(),
     );
   }
 }
 
-/// Menampilkan panduan untuk pengguna baru, lalu pindah ke beranda.
 class _FirstLaunchGuide extends StatelessWidget {
   const _FirstLaunchGuide();
 
   Future<void> _complete(BuildContext context) async {
     await AppPrefs.markGuideSeen();
     if (!context.mounted) return;
-    // pushReplacement agar tombol Kembali tidak membuka panduan lagi.
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const AppShell()),
     );

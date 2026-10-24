@@ -1,0 +1,602 @@
+[
+  {
+    "ai_key": 0,
+    "common_name": "Acalypha siamensis Oliv. ex Gage",
+    "scientific_name": "Acalypha siamensis Oliv. ex Gage",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 1,
+    "common_name": "Acalypha wilkesiana Müll.Arg",
+    "scientific_name": "Acalypha wilkesiana Müll.Arg",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 2,
+    "common_name": "Agathis borneensis Warburg",
+    "scientific_name": "Agathis borneensis Warburg",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 3,
+    "common_name": "Agave demeesteriana Jacobi",
+    "scientific_name": "Agave demeesteriana Jacobi",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 4,
+    "common_name": "Allamanda cathartica L",
+    "scientific_name": "Allamanda cathartica L",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 5,
+    "common_name": "Alocasia macrorrhizos",
+    "scientific_name": "Alocasia macrorrhizos",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 6,
+    "common_name": "Aloe vera (L.) Burm.f",
+    "scientific_name": "Aloe vera (L.) Burm.f",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 7,
+    "common_name": "Alstonia angustiloba Miq",
+    "scientific_name": "Alstonia angustiloba Miq",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 8,
+    "common_name": "Alstonia iwahigensis Elmer",
+    "scientific_name": "Alstonia iwahigensis Elmer",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 9,
+    "common_name": "Amorphophallus paeoniifolius (Dennst.) Nicolson",
+    "scientific_name": "Amorphophallus paeoniifolius (Dennst.) Nicolson",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 10,
+    "common_name": "Aquilaria beccariana Thymelaeaceae",
+    "scientific_name": "Aquilaria beccariana Thymelaeaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 11,
+    "common_name": "Asystasia gangetica (L.) T.Anderson",
+    "scientific_name": "Asystasia gangetica (L.) T.Anderson",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 12,
+    "common_name": "Borassodendron borneensis J. Dransf",
+    "scientific_name": "Borassodendron borneensis J. Dransf",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 13,
+    "common_name": "Bougainvillea spectabilis",
+    "scientific_name": "Bougainvillea spectabilis",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 14,
+    "common_name": "Cocos nucifera L",
+    "scientific_name": "Cocos nucifera L",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 15,
+    "common_name": "Codiaeum variegatum (L.) Rumph. ex A.Juss",
+    "scientific_name": "Codiaeum variegatum (L.) Rumph. ex A.Juss",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 16,
+    "common_name": "Cordyline fruticosa (L.) A. Chev",
+    "scientific_name": "Cordyline fruticosa (L.) A. Chev",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 17,
+    "common_name": "Cornus alba L",
+    "scientific_name": "Cornus alba L",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 18,
+    "common_name": "Costus woodsonii Maas",
+    "scientific_name": "Costus woodsonii Maas",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 19,
+    "common_name": "Cotylelobium melanoxylum Dipterocarpaceae",
+    "scientific_name": "Cotylelobium melanoxylum Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 20,
+    "common_name": "Ctenanthe burle-marxii H.Kenn",
+    "scientific_name": "Ctenanthe burle-marxii H.Kenn",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 21,
+    "common_name": "Dillenia sp",
+    "scientific_name": "Dillenia sp",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 22,
+    "common_name": "Diospyros borneensis Hiern",
+    "scientific_name": "Diospyros borneensis Hiern",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 23,
+    "common_name": "Diospyros confertiflora Hiern",
+    "scientific_name": "Diospyros confertiflora Hiern",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 24,
+    "common_name": "Dipterocarpus confertus Dipterocarpaceae",
+    "scientific_name": "Dipterocarpus confertus Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 25,
+    "common_name": "Dipterocarpus tempehes Dipterocarpaceae",
+    "scientific_name": "Dipterocarpus tempehes Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 26,
+    "common_name": "Dracaena reflexa Lam",
+    "scientific_name": "Dracaena reflexa Lam",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 27,
+    "common_name": "Dracaena trifasciata (Prain) Mabb",
+    "scientific_name": "Dracaena trifasciata (Prain) Mabb",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 28,
+    "common_name": "Duranta erecta L",
+    "scientific_name": "Duranta erecta L",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 29,
+    "common_name": "Durio dulcis Bombacaceae",
+    "scientific_name": "Durio dulcis Bombacaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 30,
+    "common_name": "Durio lanceolatus Bombacaceae",
+    "scientific_name": "Durio lanceolatus Bombacaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 31,
+    "common_name": "Durio oxleyanus Bombacaceae",
+    "scientific_name": "Durio oxleyanus Bombacaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 32,
+    "common_name": "Etlingera balikpapanensis Zingiberaceae",
+    "scientific_name": "Etlingera balikpapanensis Zingiberaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 33,
+    "common_name": "Eusideroxylon zwageri Teijsm. & Binn",
+    "scientific_name": "Eusideroxylon zwageri Teijsm. & Binn",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 34,
+    "common_name": "Excoecaria cochinchinensis Lour",
+    "scientific_name": "Excoecaria cochinchinensis Lour",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 35,
+    "common_name": "Furcraea foetida (L.) Haw",
+    "scientific_name": "Furcraea foetida (L.) Haw",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 36,
+    "common_name": "Garcinia mangostana L",
+    "scientific_name": "Garcinia mangostana L",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 37,
+    "common_name": "Grammatophyllum speciosum",
+    "scientific_name": "Grammatophyllum speciosum",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 38,
+    "common_name": "Hibiscus rosa-sinensis L",
+    "scientific_name": "Hibiscus rosa-sinensis L",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 39,
+    "common_name": "Hopea dryobalanoides Dipterocarpaceae",
+    "scientific_name": "Hopea dryobalanoides Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 40,
+    "common_name": "Hopea mengerawan Dipterocarpaceae",
+    "scientific_name": "Hopea mengerawan Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 41,
+    "common_name": "Hopea pedicellata (Brandis) Symington",
+    "scientific_name": "Hopea pedicellata (Brandis) Symington",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 42,
+    "common_name": "Hopea rudiformis Dipterocarpaceae",
+    "scientific_name": "Hopea rudiformis Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 43,
+    "common_name": "Hura crepitans L",
+    "scientific_name": "Hura crepitans L",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 44,
+    "common_name": "Ixora javanica",
+    "scientific_name": "Ixora javanica",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 45,
+    "common_name": "Kalanchoe pinnata",
+    "scientific_name": "Kalanchoe pinnata",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 46,
+    "common_name": "Koompassia excelsa (Becc.) Taub",
+    "scientific_name": "Koompassia excelsa (Becc.) Taub",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 47,
+    "common_name": "Licuala spinosa",
+    "scientific_name": "Licuala spinosa",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 48,
+    "common_name": "Mangifera indica L",
+    "scientific_name": "Mangifera indica L",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 49,
+    "common_name": "Mussaenda philippica",
+    "scientific_name": "Mussaenda philippica",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 50,
+    "common_name": "Nepenthes mirabilis Druce",
+    "scientific_name": "Nepenthes mirabilis Druce",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 51,
+    "common_name": "Pandanus amaryllifolius Roxb",
+    "scientific_name": "Pandanus amaryllifolius Roxb",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 52,
+    "common_name": "Pandanus pygmaeus Thouars",
+    "scientific_name": "Pandanus pygmaeus Thouars",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 53,
+    "common_name": "Plumeria sp",
+    "scientific_name": "Plumeria sp",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 54,
+    "common_name": "Ruellia simplex C.Wright",
+    "scientific_name": "Ruellia simplex C.Wright",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 55,
+    "common_name": "Saraca declinata Miq",
+    "scientific_name": "Saraca declinata Miq",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 56,
+    "common_name": "Scorodocarpus borneensis",
+    "scientific_name": "Scorodocarpus borneensis",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 57,
+    "common_name": "Shorea agamii Dipterocarpaceae",
+    "scientific_name": "Shorea agamii Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 58,
+    "common_name": "Shorea beccariana Dipterocarpaceae",
+    "scientific_name": "Shorea beccariana Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 59,
+    "common_name": "Shorea inappendiculata Dipterocarpaceae",
+    "scientific_name": "Shorea inappendiculata Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 60,
+    "common_name": "Shorea laevis Ridl",
+    "scientific_name": "Shorea laevis Ridl",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 61,
+    "common_name": "Shorea macrophylla Dipterocarpaceae",
+    "scientific_name": "Shorea macrophylla Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 62,
+    "common_name": "Shorea maxwelliana Dipterocarpaceae",
+    "scientific_name": "Shorea maxwelliana Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 63,
+    "common_name": "Shorea ovalis Dipterocarpaceae",
+    "scientific_name": "Shorea ovalis Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 64,
+    "common_name": "Shorea pauciflora Dipterocarpaceae",
+    "scientific_name": "Shorea pauciflora Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 65,
+    "common_name": "Shorea pinanga Dipterocarpaceae",
+    "scientific_name": "Shorea pinanga Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 66,
+    "common_name": "Shorea smithiana Dipterocarpaceae",
+    "scientific_name": "Shorea smithiana Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 67,
+    "common_name": "Shorea stenoptera Dipterocarpaceae",
+    "scientific_name": "Shorea stenoptera Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 68,
+    "common_name": "Strombosia ceylanica Gardn",
+    "scientific_name": "Strombosia ceylanica Gardn",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 69,
+    "common_name": "Syzygium oleana",
+    "scientific_name": "Syzygium oleana",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 70,
+    "common_name": "Tabernaemontana divaricata (L.) R.Br. ex Roem. & Schult",
+    "scientific_name": "Tabernaemontana divaricata (L.) R.Br. ex Roem. & Schult",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 71,
+    "common_name": "Terminalia mantaly H.Perrier",
+    "scientific_name": "Terminalia mantaly H.Perrier",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 72,
+    "common_name": "Vatica oblongifolia Hook.f",
+    "scientific_name": "Vatica oblongifolia Hook.f",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 73,
+    "common_name": "Vatica pauciflora Dipterocarpaceae",
+    "scientific_name": "Vatica pauciflora Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  },
+  {
+    "ai_key": 74,
+    "common_name": "Vatica sarawakensis Dipterocarpaceae",
+    "scientific_name": "Vatica sarawakensis Dipterocarpaceae",
+    "family_name": "-",
+    "species_type": "Native",
+    "short_summary": "Informasi ringkas belum tersedia di database lokal."
+  }
+]

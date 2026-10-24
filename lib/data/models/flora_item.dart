@@ -4,6 +4,7 @@ import '../../core/utils/scientific_name.dart';
 /// sisanya boleh kosong dan dilengkapi bertahap.
 class FloraItem {
   const FloraItem({
+    this.serverId,
     required this.index,
     required this.commonName,
     required this.scientificName,
@@ -15,7 +16,14 @@ class FloraItem {
     this.altitude,
     this.conservationStatus,
     this.conservationNote,
+    this.isVerified = true,
   });
+
+  /// ID spesies pada PostgreSQL/Django, null untuk katalog lokal/dummy.
+  final int? serverId;
+
+  /// False untuk entri placeholder development yang belum diverifikasi.
+  final bool isVerified;
 
   final String index;
   final String commonName;

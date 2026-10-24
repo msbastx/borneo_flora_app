@@ -46,6 +46,36 @@ class _SpeciesInfoTabsState extends State<SpeciesInfoTabs> {
           onChanged: (t) => setState(() => _tab = t),
         ),
         const SizedBox(height: 20),
+        if (widget.flora.item?.isVerified == false) ...[
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF4D6),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE6D39B)),
+            ),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline, color: Color(0xFF805B13), size: 20),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'DATA PENGEMBANGAN: metadata dari server belum diverifikasi. '
+                    'Nama umum, taksonomi, dan status konservasi tidak boleh '
+                    'dianggap sebagai informasi botani resmi.',
+                    style: TextStyle(
+                      color: Color(0xFF805B13),
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
           child: KeyedSubtree(key: ValueKey(_tab), child: _panel()),

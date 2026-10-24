@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../data/flora_repository.dart';
+import '../../data/models/flora_item.dart';
+import '../../data/species_api_repository.dart';
 import '../../data/history/identification_history_repository.dart';
 import '../../data/history/identification_record.dart';
 import '../../data/history/prefs_history_repository.dart';
@@ -22,15 +24,18 @@ class IdentificationController extends ChangeNotifier {
     FloraClassifier? classifier,
     ImagePicker? picker,
     FloraRepository? repository,
+    SpeciesApiRepository? speciesApiRepository,
     IdentificationHistoryRepository? history,
   })  : _classifier = classifier ?? FloraClassifier(),
         _picker = picker ?? ImagePicker(),
         _repository = repository ?? FloraRepository(),
+        _speciesApiRepository = speciesApiRepository ?? SpeciesApiRepository(),
         _history = history ?? PrefsHistoryRepository();
 
   final FloraClassifier _classifier;
   final ImagePicker _picker;
   final FloraRepository _repository;
+  final SpeciesApiRepository _speciesApiRepository;
   final IdentificationHistoryRepository _history;
 
   IdentificationStatus _status = IdentificationStatus.loadingModel;
@@ -203,13 +208,13 @@ class IdentificationController extends ChangeNotifier {
       watch.stop();
 
       _inferenceTime = watch.elapsed;
-      _results = [
-        for (final FloraPrediction p in predictions)
-          IdentifiedFlora(
-            prediction: p,
-            item: _repository.findByScientificName(p.label),
-          ),
-      ];
+      // Inferensi tetap on-device. Metadata setiap kandidat dimuat dari API
+      // berdasarkan indeks kelas (ai_key); jika jaringan gagal, gunakan
+      // katalog lokal agar fitur identifikasi tetap berfungsi.
+      _results = await Future.wait<IdentifiedFlora>([
+        for (final FloraPrediction prediction in predictions)
+          _resolvePrediction(prediction),
+      ]);
       // Hanya hasil yang dikenali yang masuk riwayat. Citra yang tidak dikenali
       // tidak disimpan, sesuai teks pada popup "tidak dikenali".
       _record = (_results.isNotEmpty && isConfident)
@@ -224,11 +229,28 @@ class IdentificationController extends ChangeNotifier {
     }
   }
 
+  Future<IdentifiedFlora> _resolvePrediction(
+    FloraPrediction prediction,
+  ) async {
+    FloraItem? item;
+    try {
+      item = await _speciesApiRepository.findByAiKey(prediction.index);
+    } catch (e) {
+      debugPrint(
+        'Lookup API gagal untuk ai_key=${prediction.index}; memakai katalog lokal: $e',
+      );
+    }
+
+    item ??= _repository.findByScientificName(prediction.label);
+    return IdentifiedFlora(prediction: prediction, item: item);
+  }
+
   Future<IdentificationRecord?> _recordResult(DateTime capturedAt) async {
     final IdentifiedFlora top = _results.first;
     try {
       return await _history.add(
         IdentificationRecord(
+          speciesId: top.item?.serverId,
           predictedLabel: top.prediction.label,
           confidence: top.prediction.probability,
           candidates: [

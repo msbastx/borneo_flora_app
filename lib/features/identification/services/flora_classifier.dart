@@ -58,13 +58,44 @@ class FloraClassifier {
 
     final List<double> logits =
         raw.map((e) => double.parse(e.toString())).toList();
+
+    // Development diagnostics: getImagePredictionList returns raw model scores.
+    // These logs help determine whether those values look like logits or
+    // probabilities and whether label/output dimensions agree.
+    final double rawMin = logits.reduce(min);
+    final double rawMax = logits.reduce(max);
+    final double rawSum = logits.fold(0.0, (sum, value) => sum + value);
+    debugPrint(
+      '[FloraClassifier] outputCount=${logits.length}, '
+      'labelCount=${_labels.length}, rawMin=${rawMin.toStringAsFixed(5)}, '
+      'rawMax=${rawMax.toStringAsFixed(5)}, '
+      'rawSum=${rawSum.toStringAsFixed(5)}',
+    );
+
+    if (logits.length != _labels.length) {
+      throw ClassificationException(
+        'Jumlah output model (${logits.length}) tidak sama dengan '
+        'jumlah label (${_labels.length}). Periksa model dan class_names.txt.',
+      );
+    }
+
     final List<double> probabilities = softmax(logits);
+
+    final List<int> debugOrder = List<int>.generate(probabilities.length, (i) => i)
+      ..sort((a, b) => probabilities[b].compareTo(probabilities[a]));
+    for (final int index in debugOrder.take(5)) {
+      debugPrint(
+        '[FloraClassifier] top index=$index label="${_labels[index]}" '
+        'raw=${logits[index].toStringAsFixed(5)} '
+        'softmax=${probabilities[index].toStringAsFixed(5)}',
+      );
+    }
 
     final List<FloraPrediction> predictions = List.generate(
       probabilities.length,
       (i) => FloraPrediction(
         index: i,
-        label: i < _labels.length ? _labels[i] : 'Unknown Class',
+        label: _labels[i],
         probability: probabilities[i],
         logit: logits[i],
       ),

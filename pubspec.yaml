@@ -41,6 +41,12 @@ dependencies:
   google_fonts: ^8.2.1
   shared_preferences: ^2.5.5
 
+  dio: ^5.7.0
+  connectivity_plus: ^6.1.0
+  geolocator: ^13.0.1
+  webview_flutter: ^4.10.0
+  flutter_secure_storage: ^9.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -61,6 +67,7 @@ flutter:
   assets:
     - assets/model_flora.ptl
     - assets/class_names.txt
+    - assets/species_labels.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:

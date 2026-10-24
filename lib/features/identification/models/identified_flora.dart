@@ -18,20 +18,23 @@ class IdentifiedFlora {
 
   bool get hasCatalogEntry => item != null;
 
-  /// Nama umum dari katalog, atau nama ilmiah bila belum ada di katalog.
-  String get title => item?.commonName ?? name.binomial;
+  /// Metadata server yang belum diverifikasi tidak boleh menyamar sebagai
+  /// nama umum kanonis. Tampilkan binomial dari label model dahulu.
+  String get title => item?.isVerified == true ? item!.commonName : name.binomial;
 
-  String get scientificName => item?.parsedName.binomial ?? name.binomial;
+  String get scientificName =>
+      item?.isVerified == true ? item!.parsedName.binomial : name.binomial;
 
-  /// Nama ilmiah hanya jadi subjudul bila judulnya nama umum.
-  bool get showsScientificName => hasCatalogEntry;
+  /// Nama ilmiah menjadi subjudul hanya jika nama umum telah diverifikasi.
+  bool get showsScientificName => item?.isVerified == true &&
+      title.toLowerCase() != scientificName.toLowerCase();
 
-  String? get family => item?.family ?? name.family;
+  String? get family => item?.isVerified == true ? item!.family : name.family;
 
   /// Baris kecil di bawah nama, contoh "BLACK ORCHID · KERSIK LUWAY".
   String? get caption {
     final FloraItem? item = this.item;
-    if (item == null) return null;
+    if (item == null || !item.isVerified) return null;
 
     final Set<String> seen = {item.commonName.toLowerCase()};
     final List<String> parts = [];

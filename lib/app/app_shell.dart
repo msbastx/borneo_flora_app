@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_theme.dart';
@@ -9,8 +12,10 @@ import '../features/identification/identification_controller.dart';
 import '../features/identification/identification_screen.dart';
 import '../features/identification/identification_theme.dart';
 import '../features/identification/models/identification_source.dart';
-import '../shared/widgets/coming_soon_tab.dart';
+import '../features/report/report_config.dart';
+import '../features/report/repositories/report_queue_repository.dart';
 import '../shared/widgets/navbar.dart';
+import '../shared/widgets/portal_webview_tab.dart';
 
 /// Kerangka utama: empat tab dan navbar bersama. Urutan tab mengikuti
 /// kNavDestinations (HOME, IDENT, INDEKS, PETA).
@@ -26,10 +31,35 @@ class _AppShellState extends State<AppShell> {
   static const int _identTab = 1;
 
   final IdentificationController _ident = IdentificationController();
+  late final ReportQueueRepository _reportQueue;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+
   int _index = _homeTab;
+  bool _useWebViewCatalog = false; // Toggle antara Aset Statis vs WebView di tab INDEKS
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Inisialisasi Dio & Antrean Laporan Offline-First ke Server Lokal / Production
+    final dio = Dio(BaseOptions(baseUrl: ReportConfig.apiBaseUrl));
+    _reportQueue = ReportQueueRepository(dio: dio);
+
+    // Coba kirim antrean laporan yang masih PENDING saat aplikasi baru dibuka
+    _reportQueue.processQueue();
+
+    // Pantau perubahan jaringan: otomatis kirim antrean saat internet kembali aktif
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
+      final hasNetwork = results.any((r) => r != ConnectivityResult.none);
+      if (hasNetwork) {
+        _reportQueue.processQueue();
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _connectivitySub?.cancel();
     _ident.dispose();
     super.dispose();
   }
@@ -78,24 +108,46 @@ class _AppShellState extends State<AppShell> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text('Pengaturan', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.darkGreen)),
-                  SizedBox(height: 8),
-                  Text('Pengaturan aplikasi', style: TextStyle(fontWeight: FontWeight.w700)),
-                  SizedBox(height: 4),
-                  Text('Versi prototipe: preferensi akun dan sinkronisasi belum tersedia.'),
-                  SizedBox(height: 16),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.privacy_tip_outlined, color: AppColors.darkGreen),
-                    title: Text('Privasi'),
-                    subtitle: Text('Foto diproses oleh fitur identifikasi lokal pada versi ini.'),
+                children: [
+                  const Text(
+                    'Pengaturan',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Server Aktif: ${ReportConfig.portalBaseUrl}',
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                  ),
+                  const SizedBox(height: 12),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Gunakan WebView untuk Tab Indeks'),
+                    subtitle: const Text(
+                      'Aktifkan untuk memuat katalog langsung dari server portal (/repository/).',
+                    ),
+                    value: _useWebViewCatalog,
+                    onChanged: (val) {
+                      setState(() => _useWebViewCatalog = val);
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  const Divider(),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.info_outline, color: AppColors.darkGreen),
-                    title: Text('Tentang aplikasi'),
-                    subtitle: Text('Biodiversitas Borneo · Prototipe identifikasi flora Kalimantan'),
+                    leading: const Icon(Icons.cloud_sync_outlined, color: AppColors.darkGreen),
+                    title: const Text('Sinkronkan Antrean Laporan Sekarang'),
+                    subtitle: const Text('Kirim laporan tertunda (PENDING) ke server.'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _reportQueue.processQueue();
+                      ScaffoldMessenger.of(this.context).showSnackBar(
+                        const SnackBar(content: Text('Memproses antrean laporan ke server...')),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -123,7 +175,6 @@ class _AppShellState extends State<AppShell> {
         if (!didPop) _handleBack();
       },
       child: Scaffold(
-        // Konten tab memanjang sampai ke belakang navbar melayang.
         extendBody: true,
         body: IndexedStack(
           index: _index,
@@ -136,10 +187,17 @@ class _AppShellState extends State<AppShell> {
               onMenuSelected: _onMenuSelected,
             ),
             IdentificationScreen(controller: _ident),
-            const FloraIndexScreen(),
-            const ComingSoonTab(
-              title: 'Peta Sebaran',
-              icon: Icons.map_outlined,
+            // Tab 2: INDEKS (Bisa Aset Statis Offline atau WebView Portal)
+            _useWebViewCatalog
+                ? const PortalWebViewTab(
+              title: 'Katalog Spesies Portal',
+              url: ReportConfig.catalogWebViewUrl,
+            )
+                : const FloraIndexScreen(),
+            // Tab 3: PETA DISTRIBUSI (WebView langsung ke /gis/map/species/)
+            const PortalWebViewTab(
+              title: 'Peta Sebaran Spesies Kalimantan',
+              url: ReportConfig.mapDistributionWebViewUrl,
             ),
           ],
         ),

@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/report/report_config.dart';
 import 'identification_history_repository.dart';
 import 'identification_record.dart';
 
@@ -111,6 +113,8 @@ class PrefsHistoryRepository implements IdentificationHistoryRepository {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.remove(_key);
       });
+
+  Dio get dioInstance => Dio(BaseOptions(baseUrl: ReportConfig.apiBaseUrl));
 }
 
 class _Store {

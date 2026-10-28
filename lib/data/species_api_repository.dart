@@ -1,16 +1,19 @@
 import 'package:dio/dio.dart';
 
 import '../core/network/api_client.dart';
+import '../features/report/report_config.dart';
 import 'models/flora_item.dart';
 
-/// Mengambil metadata spesies dari endpoint Django berdasarkan indeks model.
-///
-/// `ai_key` sengaja dipakai sebagai kunci utama karena label model menyertakan
-/// otoritas taksonomi/famili pada sebagian kelas. Endpoint lookup di server
-/// sudah diuji untuk key 0..74.
 class SpeciesApiRepository {
   SpeciesApiRepository({Dio? dio, ApiClient? client})
-      : _dio = dio ?? (client ?? ApiClient()).dio;
+      : _dio = dio ??
+      Dio(
+        BaseOptions(
+          baseUrl: '${ReportConfig.apiBaseUrl}/',
+          connectTimeout: const Duration(seconds: 8),
+          receiveTimeout: const Duration(seconds: 8),
+        ),
+      );
 
   final Dio _dio;
   final Map<int, FloraItem> _cache = {};
@@ -59,9 +62,9 @@ class SpeciesApiRepository {
   }
 
   FloraItem _toFloraItem(
-    Map<String, dynamic> json, {
-    required int requestedAiKey,
-  }) {
+      Map<String, dynamic> json, {
+        required int requestedAiKey,
+      }) {
     final bool isVerified = json['is_verified'] == true;
     final int? serverId = _asInt(json['id']);
     final String scientificName = _nonEmptyString(json['scientific_name']) ??
@@ -69,15 +72,12 @@ class SpeciesApiRepository {
     final String? rawCommonName = _nonEmptyString(json['common_name']);
     final Map<String, dynamic> taxonomy = _asStringMap(json['taxonomy']);
 
-    // Jangan menampilkan nama placeholder sebagai nama umum yang valid.
     final bool commonNameIsPlaceholder = rawCommonName == null ||
         rawCommonName.toLowerCase().startsWith('nama umum belum tersedia');
     final String commonName = !isVerified || commonNameIsPlaceholder
         ? scientificName
-        : rawCommonName!;
+        : rawCommonName;
 
-    // Data dari development seeder sengaja tidak diperlakukan sebagai fakta
-    // botani: abaikan nilai DD, family/order/class placeholder, dan deskripsi.
     final String? family = isVerified
         ? _validMetadata(_nonEmptyString(taxonomy['family']))
         : null;
@@ -91,6 +91,17 @@ class SpeciesApiRepository {
         ? _validMetadata(_nonEmptyString(json['notes']))
         : null;
 
+    // Baca status Endemik, kode IUCN, dan perlindungan P.106 dari respons Django
+    final String typeRaw = (_nonEmptyString(json['type']) ?? '').toLowerCase();
+    final String typeLabel = (_nonEmptyString(json['type_label']) ?? '').toLowerCase();
+    final bool isEndemic = typeRaw == 'endemic' || typeLabel.contains('endemik');
+
+    final String iucnCode = _nonEmptyString(json['iucn']) ?? 'NE';
+    final String p106Raw = (_nonEmptyString(json['p106']) ?? '').toLowerCase();
+    final bool isProtected = p106Raw.contains('dilindungi');
+    final String? imageUrl = _nonEmptyString(json['thumbnail_url']) ??
+        _nonEmptyString(json['image_url']);
+
     return FloraItem(
       serverId: serverId,
       index: (requestedAiKey + 1).toString().padLeft(2, '0'),
@@ -100,6 +111,10 @@ class SpeciesApiRepository {
       description: paragraphs,
       conservationStatus: iucnLabel,
       conservationNote: notes,
+      iucnCode: iucnCode,
+      isEndemic: isEndemic,
+      isProtected: isProtected,
+      imageUrl: imageUrl,
       isVerified: isVerified,
     );
   }

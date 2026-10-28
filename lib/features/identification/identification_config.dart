@@ -7,13 +7,13 @@ abstract final class IdentificationConfig {
   static const int classCount = 75;
 
   /// Jumlah kandidat teratas yang ditampilkan.
-  static const int topK = 3;
+  static const int topK = 4;
 
   /// Probabilitas minimum agar hasil dianggap dikenali (0.0 sampai 1.0).
-  static const double confidenceThreshold = 0.6;
+  static const double confidenceThreshold = 0.45;
 
   /// Probabilitas minimum untuk label "Keyakinan tinggi".
-  static const double highConfidenceThreshold = 0.8;
+  static const double highConfidenceThreshold = 0.75;
 
   /// Versi model yang tampil pada kartu keyakinan. Sesuaikan dengan
   /// versi model yang benar-benar dibundel.

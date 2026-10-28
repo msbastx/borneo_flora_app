@@ -1,7 +1,6 @@
 import '../../core/utils/scientific_name.dart';
 
-/// Satu spesies flora di katalog. Hanya tiga bidang pertama yang wajib,
-/// sisanya boleh kosong dan dilengkapi bertahap.
+/// Satu spesies flora di katalog.
 class FloraItem {
   const FloraItem({
     this.serverId,
@@ -16,6 +15,10 @@ class FloraItem {
     this.altitude,
     this.conservationStatus,
     this.conservationNote,
+    this.iucnCode = 'NE',
+    this.isEndemic = false,
+    this.isProtected = false,
+    this.imageUrl,
     this.isVerified = true,
   });
 
@@ -29,24 +32,19 @@ class FloraItem {
   final String commonName;
   final String scientificName;
   final String? englishName;
-
-  /// Nama daerah, termasuk nama umum lain.
   final List<String> localNames;
-
   final String? family;
-
-  /// Penjelasan umum, satu elemen per paragraf.
   final List<String> description;
-
-  /// Contoh: "Mar – Jun".
   final String? floweringSeason;
-
-  /// Contoh: "0 – 500 m".
   final String? altitude;
-
-  /// Contoh: "Rentan (VU)".
   final String? conservationStatus;
   final String? conservationNote;
+
+  /// Tambahan atribut untuk logika verifikasi Endemik & Pelaporan
+  final String iucnCode;
+  final bool isEndemic;
+  final bool isProtected;
+  final String? imageUrl;
 
   ScientificName get parsedName => ScientificName.parse(scientificName);
 }

@@ -128,8 +128,19 @@ class _PortalWebViewTabState extends State<PortalWebViewTab> {
                           ),
                           const SizedBox(height: 16),
                           FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.darkGreen,
+                              foregroundColor: const Color(0xFFF2EFE8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
                             onPressed: _reload,
-                            icon: const Icon(Icons.refresh),
+                            icon: const Icon(Icons.refresh, size: 18),
                             label: const Text('Coba Lagi'),
                           ),
                         ],

@@ -46,8 +46,7 @@ class ResultView extends StatelessWidget {
   Widget build(BuildContext context) {
     final EdgeInsets inset = MediaQuery.paddingOf(context);
     final IdentifiedFlora top = results.first;
-    final List<IdentifiedFlora> candidates =
-        isConfident ? results.skip(1).toList() : results;
+    final List<IdentifiedFlora> candidates = results.skip(1).take(3).toList();
 
     return ColoredBox(
       color: IdentColors.cream,

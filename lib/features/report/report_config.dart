@@ -5,7 +5,7 @@ abstract final class ReportConfig {
 
   /// Gunakan '10.0.2.2:8001' untuk Android Emulator,
   /// atau ganti dengan IP Wi-Fi laptop (misal '192.168.1.10:8001') jika pakai HP fisik.
-  static const String localHost = '10.0.2.2:8001';
+  static const String localHost = '192.168.1.14:8001';
   static const String prodHost = 'kalimantanbio.com';
 
   /// Nama host yang tampil pada teks popup.

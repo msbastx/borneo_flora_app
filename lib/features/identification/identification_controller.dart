@@ -191,6 +191,9 @@ class IdentificationController extends ChangeNotifier {
       final XFile? picked = await _picker.pickImage(
         source: source,
         preferredCameraDevice: _cameraDevice,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 90,
       );
       if (picked == null) return;
 

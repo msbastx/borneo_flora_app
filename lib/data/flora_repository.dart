@@ -1,4 +1,6 @@
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../core/constants/app_assets.dart';
@@ -13,116 +15,136 @@ class FloraRepository {
   }
 
   static List<FloraItem>? _cachedStaticItems;
-
   List<FloraItem> _items = const [];
   Map<String, FloraItem> _byKey = const {};
 
   List<FloraItem> get all => _items;
 
   void _setItems(List<FloraItem> items) {
-    _items = items;
-    _byKey = {for (final FloraItem i in items) i.parsedName.key: i};
+    _items = List<FloraItem>.unmodifiable(items);
+    _byKey = {for (final FloraItem item in items) item.parsedName.key: item};
   }
 
-  /// Memuat seluruh 75 spesies dari assets/species_labels.json & class_names.txt
-  /// agar katalog offline menampilkan 75 spesies lengkap tanpa membengkakkan ukuran app.
+  /// Memuat daftar 75 kelas model sebagai katalog offline ringan.
+  /// Label kelas bukan metadata botani: nama umum, famili, endemisme, dan IUCN
+  /// tidak dianggap valid kecuali sumber menyertakan is_verified=true.
   Future<void> ensureLoadedFromAssets() async {
-    if (_cachedStaticItems != null && _cachedStaticItems!.length > dummyFloraList.length) {
-      _setItems(_cachedStaticItems!);
+    final cached = _cachedStaticItems;
+    if (cached != null && cached.length > dummyFloraList.length) {
+      _setItems(cached);
       return;
     }
 
+    final Map<String, FloraItem> dummyByKey = {
+      for (final FloraItem item in dummyFloraList) item.parsedName.key: item,
+    };
+    final List<FloraItem> loaded = [];
+
     try {
-      final Map<String, FloraItem> dummyByKey = {
-        for (final item in dummyFloraList) item.parsedName.key: item,
-      };
+      final String raw = await rootBundle.loadString('assets/species_labels.json');
+      final dynamic decoded = json.decode(raw);
+      if (decoded is List) {
+        for (int i = 0; i < decoded.length; i++) {
+          final dynamic row = decoded[i];
+          if (row is! Map) continue;
+          final entry = Map<String, dynamic>.from(row);
+          final String label = (entry['model_label'] ??
+                  entry['scientific_name'] ?? entry['label'] ?? '')
+              .toString().trim();
+          if (label.isEmpty) continue;
 
-      final List<FloraItem> loaded = [];
+          final String nameKey = ScientificName.parse(label).key;
+          final FloraItem? dummy = dummyByKey[nameKey];
+          final bool verified = entry['is_verified'] == true;
+          final String type = (entry['species_type'] ?? entry['type'] ?? '')
+              .toString().trim().toLowerCase();
+          final bool typeKnown = verified &&
+              const {'endemic', 'endemik', 'native', 'invasive'}.contains(type);
+          final bool endemic = typeKnown &&
+              (type == 'endemic' || type == 'endemik');
 
-      // Coba muat dari assets/species_labels.json terlebih dahulu
+          final String? suppliedCommon = _valid(entry['common_name']);
+          final String commonName = verified && suppliedCommon != null
+              ? suppliedCommon
+              : ScientificName.parse(label).binomial;
+          final String scientificName = verified
+              ? (_valid(entry['scientific_name']) ?? ScientificName.parse(label).binomial)
+              : ScientificName.parse(label).binomial;
+
+          loaded.add(FloraItem(
+            serverId: verified && entry['id'] is num
+                ? (entry['id'] as num).toInt()
+                : null,
+            index: (i + 1).toString().padLeft(2, '0'),
+            commonName: commonName,
+            scientificName: scientificName,
+            family: verified ? _valid(entry['family_name'] ?? entry['family']) : null,
+            localNames: verified ? (dummy?.localNames ?? const []) : const [],
+            description: verified
+                ? _description(entry['description'] ?? entry['short_summary'])
+                : const [],
+            conservationStatus: verified ? _valid(entry['iucn_label']) : null,
+            conservationNote: verified ? _valid(entry['notes']) : null,
+            iucnCode: verified ? (_valid(entry['iucn']) ?? 'NE') : 'NE',
+            isEndemic: endemic,
+            endemicStatusKnown: typeKnown,
+            isProtected: verified &&
+                (entry['p106']?.toString().toLowerCase().contains('dilindungi') ?? false),
+            isVerified: verified,
+          ));
+        }
+      }
+    } catch (e) {
+      debugPrint('[FloraRepository] Gagal membaca species_labels.json: $e');
+    }
+
+    // Fallback tetap menampilkan semua kelas, tetapi tidak menandai metadata valid.
+    if (loaded.isEmpty) {
       try {
-        final String jsonRaw = await rootBundle.loadString('assets/species_labels.json');
-        final dynamic decoded = json.decode(jsonRaw);
-        if (decoded is List) {
-          for (int i = 0; i < decoded.length; i++) {
-            final entry = decoded[i];
-            if (entry is Map) {
-              final sciName = (entry['scientific_name'] ?? entry['label'] ?? '').toString().trim();
-              if (sciName.isEmpty) continue;
-              final parsedKey = ScientificName.parse(sciName).key;
-              final dummy = dummyByKey[parsedKey];
-
-              final typeStr = (entry['type'] ?? entry['species_type'] ?? '').toString().toLowerCase();
-              final isEndemic = entry['is_endemic'] == true ||
-                  typeStr.contains('endemic') ||
-                  typeStr.contains('endemik') ||
-                  (dummy?.conservationNote?.toLowerCase().contains('endemik') ?? false);
-
-              loaded.add(
-                FloraItem(
-                  serverId: entry['id'] is num ? (entry['id'] as num).toInt() : dummy?.serverId,
-                  index: (i + 1).toString().padLeft(2, '0'),
-                  commonName: (entry['common_name'] ?? dummy?.commonName ?? sciName).toString(),
-                  scientificName: sciName,
-                  family: (entry['family'] ?? dummy?.family)?.toString(),
-                  localNames: dummy?.localNames ?? const [],
-                  description: dummy?.description ?? const [],
-                  conservationStatus: (entry['iucn_label'] ?? dummy?.conservationStatus)?.toString(),
-                  conservationNote: (entry['notes'] ?? dummy?.conservationNote)?.toString(),
-                  iucnCode: (entry['iucn'] ?? dummy?.iucnCode ?? 'NE').toString(),
-                  isEndemic: isEndemic,
-                  isProtected: (entry['p106'] ?? '').toString().toLowerCase().contains('dilindungi') ||
-                      (dummy?.isProtected ?? false),
-                ),
-              );
-            }
-          }
-        }
-      } catch (_) {
-        // Jika format species_labels.json berbeda, fallback ke class_names.txt (75 spesies)
-      }
-
-      if (loaded.isEmpty) {
-        final String rawClasses = await rootBundle.loadString(AppAssets.classNames);
-        final List<String> lines = rawClasses
+        final String raw = await rootBundle.loadString(AppAssets.classNames);
+        final List<String> labels = raw
             .split('\n')
-            .map((e) => e.trim())
-            .where((e) => e.isNotEmpty)
+            .map((String value) => value.trim())
+            .where((String value) => value.isNotEmpty)
             .toList();
-
-        for (int i = 0; i < lines.length; i++) {
-          final String sciName = lines[i];
-          final String key = ScientificName.parse(sciName).key;
-          final FloraItem? dummy = dummyByKey[key];
-
-          loaded.add(
-            FloraItem(
-              serverId: dummy?.serverId,
-              index: (i + 1).toString().padLeft(2, '0'),
-              commonName: dummy?.commonName ?? sciName,
-              scientificName: sciName,
-              family: dummy?.family,
-              localNames: dummy?.localNames ?? const [],
-              description: dummy?.description ?? const [],
-              conservationStatus: dummy?.conservationStatus,
-              conservationNote: dummy?.conservationNote,
-              iucnCode: dummy?.iucnCode ?? 'NE',
-              isEndemic: dummy?.isEndemic ??
-                  sciName.toLowerCase().contains('balikpapanensis') ||
-                      sciName.toLowerCase().contains('borneensis'),
-              isProtected: dummy?.isProtected ?? false,
-            ),
-          );
+        for (int i = 0; i < labels.length; i++) {
+          final name = ScientificName.parse(labels[i]).binomial;
+          loaded.add(FloraItem(
+            index: (i + 1).toString().padLeft(2, '0'),
+            commonName: name,
+            scientificName: name,
+            isVerified: false,
+            endemicStatusKnown: false,
+          ));
         }
+      } catch (e) {
+        debugPrint('[FloraRepository] Gagal membaca class_names.txt: $e');
       }
+    }
 
-      if (loaded.isNotEmpty) {
-        _cachedStaticItems = loaded;
-        _setItems(loaded);
-      }
-    } catch (_) {}
+    if (loaded.isNotEmpty) {
+      _cachedStaticItems = List<FloraItem>.unmodifiable(loaded);
+      _setItems(_cachedStaticItems!);
+    }
   }
 
   FloraItem? findByScientificName(String name) =>
       _byKey[ScientificName.parse(name).key];
+
+  static String? _valid(Object? value) {
+    if (value is! String) return null;
+    final text = value.trim();
+    if (text.isEmpty || text == '-' || text.toLowerCase() == 'unknown' ||
+        text.toLowerCase().startsWith('nama umum belum') ||
+        text.toLowerCase().startsWith('[dev]')) return null;
+    return text;
+  }
+
+  static List<String> _description(Object? value) {
+    if (value is! String || value.trim().isEmpty) return const [];
+    return value.split(RegExp(r'\n\s*\n'))
+        .map((String paragraph) => paragraph.trim())
+        .where((String paragraph) => paragraph.isNotEmpty)
+        .toList(growable: false);
+  }
 }

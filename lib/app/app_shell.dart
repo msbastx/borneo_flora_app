@@ -35,7 +35,7 @@ class _AppShellState extends State<AppShell> {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
   int _index = _homeTab;
-  bool _useWebViewCatalog = false; // Toggle antara Aset Statis vs WebView di tab INDEKS
+  bool _useWebViewCatalog = true; // WebView katalog utama; aset statis tetap tersedia sebagai fallback offline
 
   @override
   void initState() {
@@ -46,15 +46,21 @@ class _AppShellState extends State<AppShell> {
     _reportQueue = ReportQueueRepository(dio: dio);
 
     // Coba kirim antrean laporan yang masih PENDING saat aplikasi baru dibuka
-    _reportQueue.processQueue();
+    _processQueueSafely();
 
     // Pantau perubahan jaringan: otomatis kirim antrean saat internet kembali aktif
     _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
       final hasNetwork = results.any((r) => r != ConnectivityResult.none);
       if (hasNetwork) {
-        _reportQueue.processQueue();
+        _processQueueSafely();
       }
     });
+  }
+
+  void _processQueueSafely() {
+    unawaited(_reportQueue.processQueue().catchError((Object error) {
+      debugPrint('[ReportQueue] Gagal memproses antrean: $error');
+    }));
   }
 
   @override
@@ -143,7 +149,7 @@ class _AppShellState extends State<AppShell> {
                     subtitle: const Text('Kirim laporan tertunda (PENDING) ke server.'),
                     onTap: () {
                       Navigator.of(context).pop();
-                      _reportQueue.processQueue();
+                      _processQueueSafely();
                       ScaffoldMessenger.of(this.context).showSnackBar(
                         const SnackBar(content: Text('Memproses antrean laporan ke server...')),
                       );

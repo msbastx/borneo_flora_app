@@ -8,7 +8,7 @@ import '../models/report_decision.dart';
 import '../report_config.dart';
 import 'report_sheet_parts.dart';
 
-/// Popup untuk citra yang tidak dikenali model (keyakinan di bawah ambang).
+/// Popup untuk kandidat yang belum bisa diterima, termasuk metadata kelas yang belum terverifikasi.
 /// Tampilkan dengan `showReportSheet(context, UnknownSpeciesSheet(...))`.
 class UnknownSpeciesSheet extends StatefulWidget {
   const UnknownSpeciesSheet({
@@ -21,7 +21,8 @@ class UnknownSpeciesSheet extends StatefulWidget {
     this.imageSizeBytes,
     this.latitude,
     this.longitude,
-    this.initialAllowTraining = true,
+    this.initialAllowTraining = false,
+    this.reasonText,
   });
 
   /// Keyakinan tertinggi dari model, 0.0 sampai 1.0.
@@ -41,6 +42,10 @@ class UnknownSpeciesSheet extends StatefulWidget {
 
   /// Nilai awal saklar izin data pelatihan. Desain Figma menyalakannya.
   final bool initialAllowTraining;
+
+  /// Keterangan custom, misalnya confidence tinggi tetapi metadata katalog
+  /// belum diverifikasi. Jika null, teks threshold standar dipakai.
+  final String? reasonText;
 
   @override
   State<UnknownSpeciesSheet> createState() => _UnknownSpeciesSheetState();
@@ -92,23 +97,29 @@ class _UnknownSpeciesSheetState extends State<UnknownSpeciesSheet> {
             style: ReportSheetText.serif(_palette.title),
           ),
           const SizedBox(height: 12),
-          Text.rich(
-            TextSpan(
+          if (widget.reasonText != null)
+            Text(
+              widget.reasonText!,
               style: ReportSheetText.sans(_palette.body),
-              children: [
-                const TextSpan(text: 'Keyakinan tertinggi hanya '),
-                TextSpan(
-                  text: formatPercent(widget.topConfidence),
-                  style: ReportSheetText.sans(AppColors.neonLime, weight: FontWeight.w700),
-                ),
-                TextSpan(
-                  text: ', di bawah ambang $thresholdPercent%. '
-                      'Citra ini mungkin bukan flora Kalimantan, '
-                      'atau belum ada dalam ${widget.catalogCount} rekaman kami.',
-                ),
-              ],
+            )
+          else
+            Text.rich(
+              TextSpan(
+                style: ReportSheetText.sans(_palette.body),
+                children: [
+                  const TextSpan(text: 'Keyakinan tertinggi '),
+                  TextSpan(
+                    text: formatPercent(widget.topConfidence),
+                    style: ReportSheetText.sans(AppColors.neonLime, weight: FontWeight.w700),
+                  ),
+                  TextSpan(
+                    text: ', belum melewati ambang penerimaan $thresholdPercent%. '
+                        'Citra mungkin bukan flora atau belum memiliki metadata terverifikasi '
+                        'dalam katalog.',
+                  ),
+                ],
+              ),
             ),
-          ),
           const SizedBox(height: 18),
           _CapturedImageCard(
             palette: _palette,

@@ -1,6 +1,6 @@
 enum ReportType {
-  unknownImage('UNKNOWN_IMAGE'), // Untuk UC-03 (POST /unknown-images)
-  endemicFinding('ENDEMIC_FINDING'); // Untuk UC-04 (POST /findings)
+  unknownImage('UNKNOWN_IMAGE'),
+  endemicFinding('ENDEMIC_FINDING');
 
   final String value;
   const ReportType(this.value);
@@ -10,10 +10,10 @@ enum ReportType {
 }
 
 enum UploadStatus {
-  pending('PENDING'),   // Menunggu giliran kirim
-  sending('SENDING'),   // Sedang dikirim
-  sent('SENT'),         // Berhasil diterima server
-  failed('FAILED');     // Melewati batas 3x putaran gagal
+  pending('PENDING'),
+  sending('SENDING'),
+  sent('SENT'),
+  failed('FAILED');
 
   final String value;
   const UploadStatus(this.value);
@@ -23,9 +23,9 @@ enum UploadStatus {
 }
 
 class ReportQueueItem {
-  final String id; // UUID v4 dari client
+  final String id;
   final int? historyId;
-  final int? aiKey; // Diisi jika ENDEMIC_FINDING, boleh null/tebakan terbaik jika UNKNOWN_IMAGE
+  final int? aiKey;
   final ReportType reportType;
   final String imagePath;
   final double? latitude;
@@ -34,6 +34,10 @@ class ReportQueueItem {
   final int attemptCount;
   final String? lastError;
   final DateTime createdAt;
+  final bool allowTraining;
+  final double? confidence;
+  final String? modelVersion;
+  final bool coordinateApproximate;
 
   const ReportQueueItem({
     required this.id,
@@ -47,59 +51,68 @@ class ReportQueueItem {
     this.attemptCount = 0,
     this.lastError,
     required this.createdAt,
+    this.allowTraining = false,
+    this.confidence,
+    this.modelVersion,
+    this.coordinateApproximate = false,
   });
 
   ReportQueueItem copyWith({
+    String? imagePath,
     UploadStatus? uploadStatus,
     int? attemptCount,
     String? lastError,
-  }) {
-    return ReportQueueItem(
-      id: id,
-      historyId: historyId,
-      aiKey: aiKey,
-      reportType: reportType,
-      imagePath: imagePath,
-      latitude: latitude,
-      longitude: longitude,
-      uploadStatus: uploadStatus ?? this.uploadStatus,
-      attemptCount: attemptCount ?? this.attemptCount,
-      lastError: lastError ?? this.lastError,
-      createdAt: createdAt,
-    );
-  }
+  }) => ReportQueueItem(
+        id: id,
+        historyId: historyId,
+        aiKey: aiKey,
+        reportType: reportType,
+        imagePath: imagePath ?? this.imagePath,
+        latitude: latitude,
+        longitude: longitude,
+        uploadStatus: uploadStatus ?? this.uploadStatus,
+        attemptCount: attemptCount ?? this.attemptCount,
+        lastError: lastError,
+        createdAt: createdAt,
+        allowTraining: allowTraining,
+        confidence: confidence,
+        modelVersion: modelVersion,
+        coordinateApproximate: coordinateApproximate,
+      );
 
-  // Konversi ke Map untuk disimpan ke SQLite
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'history_id': historyId,
-      'ai_key': aiKey,
-      'report_type': reportType.value,
-      'image_path': imagePath,
-      'latitude': latitude,
-      'longitude': longitude,
-      'upload_status': uploadStatus.value,
-      'attempt_count': attemptCount,
-      'last_error': lastError,
-      'created_at': createdAt.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'history_id': historyId,
+        'ai_key': aiKey,
+        'report_type': reportType.value,
+        'image_path': imagePath,
+        'latitude': latitude,
+        'longitude': longitude,
+        'upload_status': uploadStatus.value,
+        'attempt_count': attemptCount,
+        'last_error': lastError,
+        'created_at': createdAt.toIso8601String(),
+        'allow_training': allowTraining ? 1 : 0,
+        'confidence': confidence,
+        'model_version': modelVersion,
+        'coordinate_approximate': coordinateApproximate ? 1 : 0,
+      };
 
-  // Konversi dari baris SQLite ke Object Dart
-  factory ReportQueueItem.fromMap(Map<String, dynamic> map) {
-    return ReportQueueItem(
-      id: map['id'] as String,
-      historyId: map['history_id'] as int?,
-      aiKey: map['ai_key'] as int?,
-      reportType: ReportType.fromString(map['report_type'] as String),
-      imagePath: map['image_path'] as String,
-      latitude: (map['latitude'] as num?)?.toDouble(),
-      longitude: (map['longitude'] as num?)?.toDouble(),
-      uploadStatus: UploadStatus.fromString(map['upload_status'] as String),
-      attemptCount: map['attempt_count'] as int? ?? 0,
-      lastError: map['last_error'] as String?,
-      createdAt: DateTime.parse(map['created_at'] as String),
-    );
-  }
+  factory ReportQueueItem.fromMap(Map<String, dynamic> map) => ReportQueueItem(
+        id: map['id'] as String,
+        historyId: map['history_id'] as int?,
+        aiKey: map['ai_key'] as int?,
+        reportType: ReportType.fromString(map['report_type'] as String),
+        imagePath: map['image_path'] as String,
+        latitude: (map['latitude'] as num?)?.toDouble(),
+        longitude: (map['longitude'] as num?)?.toDouble(),
+        uploadStatus: UploadStatus.fromString(map['upload_status'] as String),
+        attemptCount: map['attempt_count'] as int? ?? 0,
+        lastError: map['last_error'] as String?,
+        createdAt: DateTime.parse(map['created_at'] as String),
+        allowTraining: (map['allow_training'] as int? ?? 0) == 1,
+        confidence: (map['confidence'] as num?)?.toDouble(),
+        modelVersion: map['model_version'] as String?,
+        coordinateApproximate: (map['coordinate_approximate'] as int? ?? 0) == 1,
+      );
 }

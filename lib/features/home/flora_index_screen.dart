@@ -16,7 +16,25 @@ class FloraIndexScreen extends StatefulWidget {
 
 class _FloraIndexScreenState extends State<FloraIndexScreen> {
   final TextEditingController _search = TextEditingController();
+  late final FloraRepository _repository;
   String _query = '';
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _repository = widget.repository ?? FloraRepository();
+    if (widget.repository != null) {
+      _loading = false;
+    } else {
+      _loadStaticIndex();
+    }
+  }
+
+  Future<void> _loadStaticIndex() async {
+    await _repository.ensureLoadedFromAssets();
+    if (mounted) setState(() => _loading = false);
+  }
 
   @override
   void dispose() {
@@ -26,7 +44,10 @@ class _FloraIndexScreenState extends State<FloraIndexScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<FloraItem> all = (widget.repository ?? FloraRepository()).all;
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final List<FloraItem> all = _repository.all;
     final String q = _query.trim().toLowerCase();
     final List<FloraItem> filtered = all.where((item) =>
       item.commonName.toLowerCase().contains(q) ||
@@ -49,8 +70,20 @@ class _FloraIndexScreenState extends State<FloraIndexScreen> {
                   const Text('Kenali kekayaan\nflora Kalimantan',
                       style: AppText.homeTitle),
                   const SizedBox(height: 10),
-                  Text('${all.length} spesies dalam katalog saat ini',
-                    style: TextStyle(color: AppColors.darkGreen.withValues(alpha: .7))),
+                  Text(
+                    '${all.length} label kelas model · '
+                    '${all.where((item) => item.isVerified).length} metadata terverifikasi',
+                    style: TextStyle(color: AppColors.darkGreen.withValues(alpha: .7)),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Indeks lokal berfungsi sebagai fallback offline. Nama umum, '
+                    'famili, dan status endemik hanya ditampilkan jika diverifikasi.',
+                    style: TextStyle(
+                      color: AppColors.darkGreen.withValues(alpha: .65),
+                      fontSize: 12,
+                    ),
+                  ),
                   const SizedBox(height: 22),
                   TextField(
                     controller: _search,
@@ -115,8 +148,10 @@ class _FloraIndexScreenState extends State<FloraIndexScreen> {
                             children: [
                               Text(item.commonName, style: const TextStyle(fontFamily: 'serif', fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.darkGreen)),
                               const SizedBox(height: 4),
-                              Text(item.scientificName,
-                                style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 12)),
+                              if (item.commonName.toLowerCase() !=
+                                  item.scientificName.toLowerCase())
+                                Text(item.scientificName,
+                                  style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 12)),
                               if (item.family != null) ...[
                                 const SizedBox(height: 6),
                                 Text(item.family!.toUpperCase(),

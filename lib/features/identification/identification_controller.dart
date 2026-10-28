@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -8,7 +9,7 @@ import '../../data/models/flora_item.dart';
 import '../../data/species_api_repository.dart';
 import '../../data/history/identification_history_repository.dart';
 import '../../data/history/identification_record.dart';
-import '../../data/history/prefs_history_repository.dart';
+import '../../data/history/sqlite_history_repository.dart';
 import 'identification_config.dart';
 import 'models/confidence_level.dart';
 import 'models/flora_prediction.dart';
@@ -30,7 +31,7 @@ class IdentificationController extends ChangeNotifier {
         _picker = picker ?? ImagePicker(),
         _repository = repository ?? FloraRepository(),
         _speciesApiRepository = speciesApiRepository ?? SpeciesApiRepository(),
-        _history = history ?? PrefsHistoryRepository();
+        _history = history ?? SqliteHistoryRepository();
 
   final FloraClassifier _classifier;
   final ImagePicker _picker;
@@ -49,6 +50,7 @@ class IdentificationController extends ChangeNotifier {
   String? _errorMessage;
   bool _loadStarted = false;
   bool _disposed = false;
+  int _identifyGeneration = 0;
 
   IdentificationStatus get status => _status;
 
@@ -87,8 +89,31 @@ class IdentificationController extends ChangeNotifier {
         : ConfidenceLevel.fromProbability(top.prediction.probability);
   }
 
-  /// Hasil dianggap dikenali bila probabilitas teratas melewati ambang.
-  bool get isConfident => confidenceLevel != ConfidenceLevel.low;
+  /// Model melewati ambang confidence yang dipakai untuk penerimaan awal.
+  bool get passesAcceptanceThreshold =>
+      (topResult?.prediction.probability ?? 0) >=
+      IdentificationConfig.acceptanceThreshold;
+
+  /// Sistem hanya menyebut hasil teridentifikasi bila skor model melewati
+  /// ambang DAN katalog memiliki metadata yang diverifikasi.
+  /// Metadata fallback/placeholder tidak boleh menentukan status endemik.
+  bool get isConfident =>
+      passesAcceptanceThreshold && topResult?.item?.isVerified == true;
+
+  String get recognitionIssue {
+    final top = topResult;
+    if (top == null) return 'Model belum menghasilkan kandidat flora.';
+    if (!passesAcceptanceThreshold) {
+      final percent = (IdentificationConfig.acceptanceThreshold * 100).toStringAsFixed(2);
+      return 'Skor kandidat tertinggi ${top.prediction.percentLabel} belum melewati ambang penerimaan ${percent}%. Gambar mungkin bukan flora atau prediksi model belum cukup kuat.';
+    }
+    if (top.item?.isVerified != true) {
+      return 'Model memprediksi ${top.prediction.label} dengan skor ${top.prediction.percentLabel}, tetapi metadata spesies belum diverifikasi pada katalog server. Skor tinggi tidak membuktikan gambar adalah flora; objek non-flora juga dapat memperoleh skor tinggi. Hasil ini tetap kandidat, bukan identifikasi final.';
+    }
+    return 'Status spesies belum dapat dipastikan.';
+  }
+
+  int? get currentRecordId => _record?.id;
 
   /// Memulihkan satu baris riwayat menjadi daftar hasil yang siap ditampilkan.
   List<IdentifiedFlora> resolveRecord(IdentificationRecord record) {
@@ -139,6 +164,7 @@ class IdentificationController extends ChangeNotifier {
     _loadStarted = true;
     _setStatus(IdentificationStatus.loadingModel);
     try {
+      await _repository.ensureLoadedFromAssets();
       await _classifier.load();
       _setStatus(IdentificationStatus.ready);
     } catch (e) {
@@ -174,6 +200,7 @@ class IdentificationController extends ChangeNotifier {
   /// Kembali dari layar hasil ke layar pengambilan citra.
   void reset() {
     if (_status == IdentificationStatus.predicting) return;
+    _identifyGeneration++;
     _image = null;
     _results = const [];
     _inferenceTime = null;
@@ -198,10 +225,12 @@ class IdentificationController extends ChangeNotifier {
       if (picked == null) return;
 
       final DateTime capturedAt = DateTime.now();
+      final int generation = ++_identifyGeneration;
       _image = File(picked.path);
       _recentImage = _image;
       _results = const [];
       _inferenceTime = null;
+      _record = null;
       _errorMessage = null;
       _setStatus(IdentificationStatus.predicting);
 
@@ -209,21 +238,27 @@ class IdentificationController extends ChangeNotifier {
       final List<FloraPrediction> predictions =
           await _classifier.classify(_image!, topK: IdentificationConfig.topK);
       watch.stop();
+      if (_disposed || generation != _identifyGeneration) return;
 
       _inferenceTime = watch.elapsed;
-      // Inferensi tetap on-device. Metadata setiap kandidat dimuat dari API
-      // berdasarkan indeks kelas (ai_key); jika jaringan gagal, gunakan
-      // katalog lokal agar fitur identifikasi tetap berfungsi.
-      _results = await Future.wait<IdentifiedFlora>([
+      // Render hasil model segera dari class_names.txt. Inferensi dan tampilan
+      // kandidat tidak menunggu jaringan maupun API katalog.
+      _results = [
         for (final FloraPrediction prediction in predictions)
-          _resolvePrediction(prediction),
-      ]);
-      // Hanya hasil yang dikenali yang masuk riwayat. Citra yang tidak dikenali
-      // tidak disimpan, sesuai teks pada popup "tidak dikenali".
-      _record = (_results.isNotEmpty && isConfident)
-          ? await _recordResult(capturedAt)
-          : null;
+          IdentifiedFlora(
+            prediction: prediction,
+            item: _repository.findByScientificName(prediction.label),
+          ),
+      ];
+      // Riwayat lokal ditulis untuk setiap inferensi, termasuk mode kandidat,
+      // supaya laporan offline bisa ditautkan ke history_id tanpa server.
+      _record = await _recordResult(capturedAt);
+      if (_disposed || generation != _identifyGeneration) return;
       _setStatus(IdentificationStatus.success);
+
+      // Metadata server hanya memperkaya hasil secara asinkron. Jika offline,
+      // halaman kandidat tetap dapat dipakai dan laporan tetap dapat diantrekan.
+      unawaited(_enrichResults(predictions, capturedAt, generation));
     } on ClassificationException catch (e) {
       _fail(e.message);
     } catch (e) {
@@ -237,7 +272,9 @@ class IdentificationController extends ChangeNotifier {
   ) async {
     FloraItem? item;
     try {
-      item = await _speciesApiRepository.findByAiKey(prediction.index);
+      item = await _speciesApiRepository
+          .findByAiKey(prediction.index)
+          .timeout(const Duration(seconds: 3));
     } catch (e) {
       debugPrint(
         'Lookup API gagal untuk ai_key=${prediction.index}; memakai katalog lokal: $e',
@@ -246,6 +283,27 @@ class IdentificationController extends ChangeNotifier {
 
     item ??= _repository.findByScientificName(prediction.label);
     return IdentifiedFlora(prediction: prediction, item: item);
+  }
+
+  Future<void> _enrichResults(
+    List<FloraPrediction> predictions,
+    DateTime capturedAt,
+    int generation,
+  ) async {
+    final enriched = await Future.wait<IdentifiedFlora>([
+      for (final prediction in predictions) _resolvePrediction(prediction),
+    ]);
+    if (_disposed || generation != _identifyGeneration ||
+        _status != IdentificationStatus.success) {
+      return;
+    }
+
+    _results = enriched;
+    if (isConfident && _record == null) {
+      _record = await _recordResult(capturedAt);
+      if (_disposed || generation != _identifyGeneration) return;
+    }
+    notifyListeners();
   }
 
   Future<IdentificationRecord?> _recordResult(DateTime capturedAt) async {
@@ -295,6 +353,7 @@ class IdentificationController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _identifyGeneration++;
     super.dispose();
   }
 }

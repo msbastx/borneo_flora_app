@@ -9,25 +9,29 @@ class ResultActions extends StatelessWidget {
     required this.isSaved,
     required this.onToggleSaved,
     required this.onRequestVerification,
+    this.showSave = true,
   });
 
   final bool isSaved;
   final VoidCallback onToggleSaved;
   final VoidCallback onRequestVerification;
+  final bool showSave;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: _ActionButton(
-            label: isSaved ? 'Tersimpan' : 'Simpan',
-            icon: isSaved ? Icons.bookmark : Icons.bookmark_add_outlined,
-            filled: true,
-            onTap: onToggleSaved,
+        if (showSave) ...[
+          Expanded(
+            child: _ActionButton(
+              label: isSaved ? 'Tersimpan' : 'Simpan',
+              icon: isSaved ? Icons.bookmark : Icons.bookmark_add_outlined,
+              filled: true,
+              onTap: onToggleSaved,
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
+          const SizedBox(width: 12),
+        ],
         Expanded(
           child: _ActionButton(
             label: 'Minta verifikasi',

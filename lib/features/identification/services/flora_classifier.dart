@@ -85,6 +85,8 @@ class FloraClassifier {
     );
     predictions.sort((a, b) => b.probability.compareTo(a.probability));
 
+    debugPrint('[FloraClassifier] top-5: ' + predictions.take(5).map((p) =>
+        '${p.index}:${p.label} p=${p.probability.toStringAsFixed(6)} logit=${p.logit.toStringAsFixed(6)}').join(' | '));
     return predictions.take(topK).toList();
   }
 

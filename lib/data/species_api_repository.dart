@@ -7,13 +7,7 @@ import 'models/flora_item.dart';
 class SpeciesApiRepository {
   SpeciesApiRepository({Dio? dio, ApiClient? client})
       : _dio = dio ??
-      Dio(
-        BaseOptions(
-          baseUrl: '${ReportConfig.apiBaseUrl}/',
-          connectTimeout: const Duration(seconds: 8),
-          receiveTimeout: const Duration(seconds: 8),
-        ),
-      );
+            (client ?? ApiClient(baseUrl: ReportConfig.apiBaseUrl)).dio;
 
   final Dio _dio;
   final Map<int, FloraItem> _cache = {};
@@ -65,12 +59,18 @@ class SpeciesApiRepository {
       Map<String, dynamic> json, {
         required int requestedAiKey,
       }) {
-    final bool isVerified = json['is_verified'] == true;
+    final Map<String, dynamic> taxonomy = _asStringMap(json['taxonomy']);
+    final String kingdom = (_nonEmptyString(taxonomy['kingdom']) ??
+            _nonEmptyString(json['kingdom']) ?? '')
+        .toLowerCase();
+    // A result is eligible for the flora flow only when the server confirms
+    // both verification status and Plantae kingdom. A wrong fauna ai_key must
+    // never become a verified mobile flora result.
+    final bool isVerified = json['is_verified'] == true && kingdom == 'plantae';
     final int? serverId = _asInt(json['id']);
     final String scientificName = _nonEmptyString(json['scientific_name']) ??
         'Kelas model $requestedAiKey';
     final String? rawCommonName = _nonEmptyString(json['common_name']);
-    final Map<String, dynamic> taxonomy = _asStringMap(json['taxonomy']);
 
     final bool commonNameIsPlaceholder = rawCommonName == null ||
         rawCommonName.toLowerCase().startsWith('nama umum belum tersedia');
@@ -94,13 +94,17 @@ class SpeciesApiRepository {
     // Baca status Endemik, kode IUCN, dan perlindungan P.106 dari respons Django
     final String typeRaw = (_nonEmptyString(json['type']) ?? '').toLowerCase();
     final String typeLabel = (_nonEmptyString(json['type_label']) ?? '').toLowerCase();
-    final bool isEndemic = typeRaw == 'endemic' || typeLabel.contains('endemik');
+    final bool endemicStatusKnown = isVerified &&
+        const {'endemic', 'native', 'invasive'}.contains(typeRaw);
+    final bool isEndemic = endemicStatusKnown &&
+        (typeRaw == 'endemic' || typeLabel.contains('endemik'));
 
-    final String iucnCode = _nonEmptyString(json['iucn']) ?? 'NE';
+    final String iucnCode = isVerified ? (_nonEmptyString(json['iucn']) ?? 'NE') : 'NE';
     final String p106Raw = (_nonEmptyString(json['p106']) ?? '').toLowerCase();
-    final bool isProtected = p106Raw.contains('dilindungi');
+    final bool isProtected = isVerified && p106Raw.contains('dilindungi');
     final String? imageUrl = _nonEmptyString(json['thumbnail_url']) ??
-        _nonEmptyString(json['image_url']);
+        _nonEmptyString(json['image_url']) ??
+        _nonEmptyString(json['image']);
 
     return FloraItem(
       serverId: serverId,
@@ -113,6 +117,7 @@ class SpeciesApiRepository {
       conservationNote: notes,
       iucnCode: iucnCode,
       isEndemic: isEndemic,
+      endemicStatusKnown: endemicStatusKnown,
       isProtected: isProtected,
       imageUrl: imageUrl,
       isVerified: isVerified,

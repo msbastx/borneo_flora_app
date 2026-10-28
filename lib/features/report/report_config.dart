@@ -1,27 +1,31 @@
-/// Konfigurasi pengiriman laporan dan koneksi server.
+/// Konfigurasi portal dan REST API untuk development/production.
+///
+/// Local development: gunakan adb reverse untuk perangkat USB:
+///   adb reverse tcp:8001 tcp:8001
+///   flutter run --dart-define=BIO_SERVER_BASE_URL=http://127.0.0.1:8001
+/// Android Emulator: --dart-define=BIO_SERVER_BASE_URL=http://10.0.2.2:8001
+/// HP melalui Wi-Fi: gunakan IP LAN laptop sebagai BIO_SERVER_BASE_URL.
 abstract final class ReportConfig {
-  /// Ubah menjadi `false` saat aplikasi siap dihubungkan ke kalimantanbio.com
   static const bool isLocalDev = true;
-
-  /// Gunakan '10.0.2.2:8001' untuk Android Emulator,
-  /// atau ganti dengan IP Wi-Fi laptop (misal '192.168.1.10:8001') jika pakai HP fisik.
-  static const String localHost = '192.168.1.14:8001';
+  static const String localHost = '127.0.0.1:8001';
   static const String prodHost = 'kalimantanbio.com';
 
-  /// Nama host yang tampil pada teks popup.
-  static const String serverHost = isLocalDev ? localHost : prodHost;
+  /// Override tidak boleh diakhiri slash. Contoh: http://127.0.0.1:8001
+  static const String _baseOverride = String.fromEnvironment(
+    'BIO_SERVER_BASE_URL',
+    defaultValue: '',
+  );
 
-  /// Base URL utama portal
-  static const String portalBaseUrl =
-  isLocalDev ? 'http://$localHost' : 'https://$prodHost';
+  static const String portalBaseUrl = _baseOverride != ''
+      ? _baseOverride
+      : (isLocalDev ? 'http://$localHost' : 'https://$prodHost');
 
-  /// Base URL untuk Dio pada ReportQueueRepository (/api/v1)
-  static const String apiBaseUrl = '$portalBaseUrl/api/v1';
+  static const String serverHost = portalBaseUrl;
+  static const String apiBaseUrl = '$portalBaseUrl/api/v1/';
 
-  /// URL WebView untuk Katalog Spesies & Peta Distribusi (Saran Dosen)
-  static const String catalogWebViewUrl = '$portalBaseUrl/repository/';
+  /// Katalog website: filter Plantae (ID kingdom = 2 pada database lokal saat ini).
+  static const String catalogWebViewUrl = '$portalBaseUrl/repository/?kingdom=2';
   static const String mapDistributionWebViewUrl = '$portalBaseUrl/gis/map/species/';
 
-  /// Radius penyamaran koordinat yang dijanjikan kepada pengguna (kilometer).
   static const int approximationRadiusKm = 10;
 }

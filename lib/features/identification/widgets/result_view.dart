@@ -75,6 +75,7 @@ class ResultView extends StatelessWidget {
                         isSaved: isSaved,
                         onToggleSaved: onToggleSaved,
                         onRequestVerification: onRequestVerification,
+                        showSave: isConfident,
                       ),
                       const SizedBox(height: 24),
                       if (candidates.isNotEmpty)

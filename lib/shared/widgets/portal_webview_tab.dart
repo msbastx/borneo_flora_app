@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
 import '../../core/theme/app_theme.dart';
 
+/// Aplikasi memakai halaman katalog/peta yang sudah disediakan server Django.
+/// URL diinjeksikan melalui ReportConfig agar lokal dan production bisa diganti.
 class PortalWebViewTab extends StatefulWidget {
   const PortalWebViewTab({
     super.key,
@@ -30,24 +33,21 @@ class _PortalWebViewTabState extends State<PortalWebViewTab> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (_) {
-            if (mounted) {
-              setState(() {
-                _isLoading = true;
-                _errorMessage = null;
-              });
-            }
+            if (!mounted) return;
+            setState(() {
+              _isLoading = true;
+              _errorMessage = null;
+            });
           },
           onPageFinished: (_) {
             if (mounted) setState(() => _isLoading = false);
           },
           onWebResourceError: (error) {
-            if (error.isForMainFrame ?? true) {
-              if (mounted) {
-                setState(() {
-                  _isLoading = false;
-                  _errorMessage = error.description;
-                });
-              }
+            if ((error.isForMainFrame ?? true) && mounted) {
+              setState(() {
+                _isLoading = false;
+                _errorMessage = error.description;
+              });
             }
           },
         ),
@@ -65,15 +65,15 @@ class _PortalWebViewTabState extends State<PortalWebViewTab> {
 
   @override
   Widget build(BuildContext context) {
+    final Color background = const Color(0xFFF2EFE8);
     return SafeArea(
       bottom: false,
       child: Column(
         children: [
-          // Header kecil dengan tombol Refresh
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFFF2EFE8),
+              color: background,
               border: Border(
                 bottom: BorderSide(
                   color: AppColors.darkGreen.withValues(alpha: 0.12),
@@ -97,53 +97,76 @@ class _PortalWebViewTabState extends State<PortalWebViewTab> {
                 IconButton(
                   icon: const Icon(Icons.refresh, size: 20, color: AppColors.darkGreen),
                   onPressed: _reload,
-                  tooltip: 'Muat Ulang',
+                  tooltip: 'Muat ulang',
                   visualDensity: VisualDensity.compact,
                 ),
               ],
             ),
           ),
-          // Isi WebView
           Expanded(
             child: Stack(
               children: [
                 if (_errorMessage != null)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.wifi_off_rounded, size: 48, color: AppColors.darkGreen),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Gagal memuat halaman portal',
-                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Pastikan perangkat terhubung ke jaringan dan server (${widget.url}) sedang aktif.',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 12, color: Colors.black54),
-                          ),
-                          const SizedBox(height: 16),
-                          FilledButton.icon(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.darkGreen,
-                              foregroundColor: const Color(0xFFF2EFE8),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
+                  ColoredBox(
+                    color: background,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.wifi_off_rounded,
+                              size: 48,
+                              color: AppColors.darkGreen,
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Gagal memuat halaman portal',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                                color: AppColors.darkGreen,
                               ),
                             ),
-                            onPressed: _reload,
-                            icon: const Icon(Icons.refresh, size: 18),
-                            label: const Text('Coba Lagi'),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              'Periksa Docker/server dan alamat jaringan perangkat.\n${widget.url}',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.darkGreen.withValues(alpha: 0.75),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              _errorMessage!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.darkGreen.withValues(alpha: 0.65),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            FilledButton.icon(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.darkGreen,
+                                foregroundColor: background,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              onPressed: _reload,
+                              icon: const Icon(Icons.refresh, size: 18),
+                              label: const Text('Coba lagi'),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   )
@@ -153,11 +176,12 @@ class _PortalWebViewTabState extends State<PortalWebViewTab> {
                   const LinearProgressIndicator(
                     minHeight: 3,
                     color: AppColors.darkGreen,
+                    backgroundColor: Color(0xFFDADFD4),
                   ),
               ],
             ),
           ),
-          // Ruang agar konten bawah tidak tertutup floating navbar
+          // Ruang agar konten bawah tidak tertutup floating navbar.
           SizedBox(height: MediaQuery.paddingOf(context).bottom + 76),
         ],
       ),

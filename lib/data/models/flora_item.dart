@@ -17,9 +17,10 @@ class FloraItem {
     this.conservationNote,
     this.iucnCode = 'NE',
     this.isEndemic = false,
+    this.endemicStatusKnown = false,
     this.isProtected = false,
     this.imageUrl,
-    this.isVerified = true,
+    this.isVerified = false,
   });
 
   /// ID spesies pada PostgreSQL/Django, null untuk katalog lokal/dummy.
@@ -43,6 +44,11 @@ class FloraItem {
   /// Tambahan atribut untuk logika verifikasi Endemik & Pelaporan
   final String iucnCode;
   final bool isEndemic;
+
+  /// True hanya bila metadata terverifikasi menyatakan Endemic/Native/Invasive.
+  /// False berarti status tidak diketahui, bukan otomatis non-endemik.
+  final bool endemicStatusKnown;
+
   final bool isProtected;
   final String? imageUrl;
 

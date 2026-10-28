@@ -36,17 +36,22 @@ class ResultHeader extends StatelessWidget {
       return 'Hasil otomatis, bukan penentuan final. Verifikasi ahli '
           'disarankan untuk keperluan ilmiah.';
     }
-    final int percent =
-        (IdentificationConfig.confidenceThreshold * 100).round();
-    return 'Keyakinan di bawah $percent%. Periksa kandidat berikut sebelum '
-        'menyimpulkan.';
+    if (top.prediction.probability < IdentificationConfig.acceptanceThreshold) {
+      final String percent =
+          (IdentificationConfig.acceptanceThreshold * 100).toStringAsFixed(2);
+      return 'Skor teratas belum melewati ambang penerimaan $percent%. '
+          'Periksa kandidat berikut; model tetap bisa salah pada gambar non-flora.';
+    }
+    return 'Skor model tinggi, tetapi metadata kelas ini belum terverifikasi '
+        'pada katalog server. Ini masih kandidat, bukan identifikasi final.';
   }
 
   @override
   Widget build(BuildContext context) {
     final double topInset = MediaQuery.paddingOf(context).top;
-    final String? caption =
-        isConfident ? top.caption : 'PERIKSA KANDIDAT DI BAWAH';
+    final String? caption = isConfident
+        ? top.caption
+        : 'KANDIDAT TERATAS · PERLU VERIFIKASI';
 
     return Container(
       width: double.infinity,
@@ -68,7 +73,7 @@ class ResultHeader extends StatelessWidget {
                     const _AiChip(),
                     const SizedBox(height: 10),
                     Text(
-                      isConfident ? top.title : 'Tidak dikenali',
+                      top.title,
                       style: IdentText.serif(size: 28),
                     ),
                     if (isConfident && top.showsScientificName) ...[

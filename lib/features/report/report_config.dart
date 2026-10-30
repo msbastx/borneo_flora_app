@@ -7,7 +7,7 @@
 /// HP melalui Wi-Fi: gunakan IP LAN laptop sebagai BIO_SERVER_BASE_URL.
 abstract final class ReportConfig {
   static const bool isLocalDev = true;
-  static const String localHost = '127.0.0.1:8001';
+  static const String localHost = 'kalimantanbio.com';
   static const String prodHost = 'kalimantanbio.com';
 
   /// Override tidak boleh diakhiri slash. Contoh: http://127.0.0.1:8001

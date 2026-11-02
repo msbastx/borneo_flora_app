@@ -27,7 +27,7 @@ class ComingSoonTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          const Text('SEGERA HADIR', style: AppText.monoLabel),
+          Text('SEGERA HADIR', style: AppText.monoLabel),
         ],
       ),
     );

@@ -52,7 +52,7 @@ class UnknownSpeciesSheet extends StatefulWidget {
 }
 
 class _UnknownSpeciesSheetState extends State<UnknownSpeciesSheet> {
-  static const ReportSheetPalette _palette = ReportSheetPalette.dark;
+  static const ReportSheetPalette _palette = ReportSheetPalette.light;
 
   late bool _allowTraining = widget.initialAllowTraining;
 

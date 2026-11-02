@@ -82,7 +82,7 @@ class ResultHeader extends StatelessWidget {
                         top.scientificName,
                         style: IdentText.body(
                           size: 14,
-                          color: const Color(0xFFD5DDD7),
+                          color: IdentColors.mutedOnLight,
                           style: FontStyle.italic,
                           height: 1.3,
                         ),

@@ -80,7 +80,7 @@ class _GalleryThumb extends StatelessWidget {
           child: image == null
               ? Icon(
                   Icons.photo_library_outlined,
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: IdentColors.mutedOnLight,
                   size: 22,
                 )
               : Image.file(
@@ -169,7 +169,7 @@ class _FlipButton extends StatelessWidget {
           height: 56,
           child: Icon(
             Icons.flip_camera_android_outlined,
-            color: Colors.white.withValues(alpha: enabled ? 1 : 0.3),
+            color: IdentColors.textOnLight.withValues(alpha: enabled ? 1 : 0.35),
             size: 28,
           ),
         ),

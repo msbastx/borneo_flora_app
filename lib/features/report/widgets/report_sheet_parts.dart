@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../models/report_decision.dart';
@@ -44,48 +43,48 @@ class ReportSheetPalette {
   final Color primaryIcon;
 
   static const ReportSheetPalette dark = ReportSheetPalette(
-    background: Color(0xFF14241A),
+    background: AppColors.primary,
     handle: Color(0x33FFFFFF),
-    title: Colors.white,
-    body: Color(0xFFB9C7BC),
+    title: AppColors.baseContent,
+    body: Color(0xFF374151),
     muted: Color(0xFF8DA395),
-    panel: Color(0xFF1F3527),
-    panelBorder: Colors.transparent,
-    switchTrackOn: AppColors.neonLime,
-    switchThumbOn: Color(0xFF14241A),
-    switchTrackOff: Color(0xFF2E4636),
+    panel: AppColors.base100,
+    panelBorder: AppColors.base300,
+    switchTrackOn: AppColors.primary,
+    switchThumbOn: AppColors.primary,
+    switchTrackOff: AppColors.base300,
     switchThumbOff: Color(0xFF8DA395),
-    secondaryForeground: Colors.white,
+    secondaryForeground: AppColors.baseContent,
     secondaryBorder: Color(0x33FFFFFF),
-    primaryBackground: AppColors.neonLime,
-    primaryForeground: Color(0xFF14241A),
-    primaryIcon: Color(0xFF14241A),
+    primaryBackground: AppColors.primary,
+    primaryForeground: AppColors.primary,
+    primaryIcon: AppColors.primary,
   );
 
   static const ReportSheetPalette light = ReportSheetPalette(
-    background: Color(0xFFF1EEE5),
+    background: AppColors.base200,
     handle: Color(0x33000000),
     title: AppColors.darkGreen,
     body: Color(0xFF3C4A40),
     muted: AppColors.mutedGrey,
     panel: Colors.white,
     panelBorder: Color(0xFFE0DDD5),
-    switchTrackOn: AppColors.neonLime,
-    switchThumbOn: Color(0xFF14241A),
+    switchTrackOn: AppColors.primary,
+    switchThumbOn: AppColors.primary,
     switchTrackOff: Color(0xFFD9D5C8),
     switchThumbOff: Colors.white,
     secondaryForeground: AppColors.darkGreen,
     secondaryBorder: Color(0xFFCFCBBE),
-    primaryBackground: Color(0xFF14241A),
-    primaryForeground: Colors.white,
-    primaryIcon: AppColors.neonLime,
+    primaryBackground: AppColors.primary,
+    primaryForeground: AppColors.primaryContent,
+    primaryIcon: AppColors.primary,
   );
 }
 
 /// Gaya teks popup: Playfair Display, Plus Jakarta Sans, dan Space Mono.
 abstract final class ReportSheetText {
   static TextStyle serif(Color color, {double size = 30}) =>
-      GoogleFonts.playfairDisplay(
+      TextStyle(fontFamily: 'PlayfairDisplay',
         fontSize: size,
         height: 1.1,
         fontWeight: FontWeight.w700,
@@ -99,7 +98,7 @@ abstract final class ReportSheetText {
     double height = 1.5,
     FontStyle? style,
   }) =>
-      GoogleFonts.plusJakartaSans(
+      TextStyle(fontFamily: 'PlusJakartaSans',
         fontSize: size,
         height: height,
         fontWeight: weight,
@@ -114,7 +113,7 @@ abstract final class ReportSheetText {
     double letterSpacing = 1.2,
     double height = 1.5,
   }) =>
-      GoogleFonts.spaceMono(
+      TextStyle(fontFamily: 'SpaceMono',
         fontSize: size,
         height: height,
         fontWeight: weight,
@@ -233,7 +232,7 @@ class SheetActionButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     final RoundedRectangleBorder shape =
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(16));
-    final TextStyle labelStyle = GoogleFonts.plusJakartaSans(
+    final TextStyle labelStyle = TextStyle(fontFamily: 'PlusJakartaSans',
       fontSize: 15,
       fontWeight: FontWeight.w700,
     );

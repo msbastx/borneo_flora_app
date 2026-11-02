@@ -20,10 +20,13 @@ abstract final class IdentificationConfig {
   /// sebagai angka final. Softmax tinggi tidak membuktikan gambar adalah flora.
   static const String _acceptanceThresholdText = String.fromEnvironment(
     'FLORA_ACCEPTANCE_THRESHOLD',
-    defaultValue: '0.95',
+    defaultValue: '0.9929907321929932',
   );
   static final double acceptanceThreshold =
-      double.tryParse(_acceptanceThresholdText) ?? 0.95;
+      double.tryParse(_acceptanceThresholdText) ?? 0.9929907321929932;
+
+  /// Sama dengan `best_threshold` di portal (`identifier/services.py`).
+  static const double portalBestMatchThreshold = 0.9929907321929932;
 
   /// Versi model yang tampil pada kartu keyakinan. Sesuaikan dengan
   /// versi model yang benar-benar dibundel.

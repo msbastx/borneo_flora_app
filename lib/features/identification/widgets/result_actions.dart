@@ -63,7 +63,7 @@ class _ActionButton extends StatelessWidget {
     final BorderRadius radius = BorderRadius.circular(18);
 
     return Material(
-      color: filled ? IdentColors.background : IdentColors.card,
+      color: filled ? IdentColors.lime : IdentColors.card,
       shape: RoundedRectangleBorder(
         borderRadius: radius,
         side: filled
@@ -81,7 +81,7 @@ class _ActionButton extends StatelessWidget {
               Icon(
                 icon,
                 size: 20,
-                color: filled ? IdentColors.lime : IdentColors.green,
+                color: filled ? IdentColors.onLime : IdentColors.green,
               ),
               const SizedBox(width: 8),
               Flexible(
@@ -92,7 +92,7 @@ class _ActionButton extends StatelessWidget {
                   style: IdentText.body(
                     size: 14,
                     weight: FontWeight.w700,
-                    color: filled ? Colors.white : IdentColors.green,
+                    color: filled ? IdentColors.onLime : IdentColors.green,
                     height: 1.2,
                   ),
                 ),

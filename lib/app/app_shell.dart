@@ -107,7 +107,7 @@ class _AppShellState extends State<AppShell> {
         await showModalBottomSheet<void>(
           context: context,
           showDragHandle: true,
-          backgroundColor: const Color(0xFFFAF5FA),
+          backgroundColor: AppColors.base100,
           builder: (context) => SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
@@ -181,6 +181,7 @@ class _AppShellState extends State<AppShell> {
         if (!didPop) _handleBack();
       },
       child: Scaffold(
+        backgroundColor: AppColors.base200,
         extendBody: true,
         body: IndexedStack(
           index: _index,
@@ -191,6 +192,8 @@ class _AppShellState extends State<AppShell> {
               onOpenGallery: () =>
                   _openIdentification(IdentificationSource.gallery),
               onMenuSelected: _onMenuSelected,
+              onOpenCatalog: () => _goTo(2),
+              onOpenMap: () => _goTo(3),
             ),
             IdentificationScreen(controller: _ident),
             // Tab 2: INDEKS (Bisa Aset Statis Offline atau WebView Portal)

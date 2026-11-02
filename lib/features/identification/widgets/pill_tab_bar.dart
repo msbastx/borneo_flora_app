@@ -42,7 +42,7 @@ class PillTabBar<T> extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: value == selected
-                          ? IdentColors.background
+                          ? IdentColors.lime
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -50,8 +50,8 @@ class PillTabBar<T> extends StatelessWidget {
                       labelOf(value),
                       style: IdentText.label(
                         color: value == selected
-                            ? IdentColors.lime
-                            : const Color(0xFF5A5F55),
+                            ? IdentColors.onLime
+                            : IdentColors.mutedOnLight,
                         size: 10,
                         weight: FontWeight.w700,
                         spacing: 1.4,

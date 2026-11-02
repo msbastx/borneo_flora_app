@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Tombol ikon persegi membulat di atas latar gelap (kembali, bagikan, hapus).
+import '../identification_theme.dart';
+
+/// Tombol ikon persegi membulat di atas latar terang.
 class SquareIconButton extends StatelessWidget {
   const SquareIconButton({
     super.key,
@@ -10,8 +12,6 @@ class SquareIconButton extends StatelessWidget {
   });
 
   final IconData icon;
-
-  /// Label untuk pembaca layar.
   final String label;
   final VoidCallback onTap;
 
@@ -21,15 +21,18 @@ class SquareIconButton extends StatelessWidget {
       button: true,
       label: label,
       child: Material(
-        color: Colors.white.withValues(alpha: 0.1),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        color: IdentColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: IdentColors.cardBorder),
+        ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           child: SizedBox(
             width: 40,
             height: 40,
-            child: Icon(icon, color: Colors.white, size: 20),
+            child: Icon(icon, color: IdentColors.textOnLight, size: 20),
           ),
         ),
       ),

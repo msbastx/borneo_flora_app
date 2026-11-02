@@ -65,9 +65,9 @@ class _FloraIndexScreenState extends State<FloraIndexScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('INDEKS FLORA', style: AppText.monoLabel),
+                  Text('INDEKS FLORA', style: AppText.monoLabel),
                   const SizedBox(height: 22),
-                  const Text('Kenali kekayaan\nflora Kalimantan',
+                  Text('Kenali kekayaan\nflora Kalimantan',
                       style: AppText.homeTitle),
                   const SizedBox(height: 10),
                   Text(
@@ -106,7 +106,7 @@ class _FloraIndexScreenState extends State<FloraIndexScreen> {
                   const SizedBox(height: 22),
                   Row(
                     children: [
-                      const Text('DAFTAR SPESIES', style: AppText.monoLabel),
+                      Text('DAFTAR SPESIES', style: AppText.monoLabel),
                       const Spacer(),
                       Text('${filtered.length} hasil',
                         style: TextStyle(color: AppColors.darkGreen.withValues(alpha: .65), fontSize: 12)),

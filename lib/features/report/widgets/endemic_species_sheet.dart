@@ -143,7 +143,7 @@ class _EndemicChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF14241A),
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

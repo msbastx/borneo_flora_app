@@ -62,7 +62,7 @@ class CaptureView extends StatelessWidget {
                       constraints: const BoxConstraints(),
                       icon: const Icon(
                         Icons.history,
-                        color: Colors.white,
+                        color: IdentColors.textOnLight,
                         size: 24,
                       ),
                     ),
@@ -74,7 +74,7 @@ class CaptureView extends StatelessWidget {
                       constraints: const BoxConstraints(),
                       icon: const Icon(
                         Icons.help_outline,
-                        color: Colors.white,
+                        color: IdentColors.textOnLight,
                         size: 24,
                       ),
                     ),

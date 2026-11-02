@@ -105,7 +105,7 @@ class ConfidenceCard extends StatelessWidget {
               const Icon(
                 Icons.info_outline,
                 size: 18,
-                color: IdentColors.mutedOnDark,
+                color: IdentColors.mutedOnLight,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -113,7 +113,7 @@ class ConfidenceCard extends StatelessWidget {
                   note,
                   style: IdentText.body(
                     size: 11.5,
-                    color: IdentColors.bodyOnDark,
+                    color: IdentColors.textOnLight,
                     height: 1.45,
                   ),
                 ),

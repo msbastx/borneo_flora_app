@@ -15,7 +15,7 @@ class FloraIndexHeader extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('INDEKS FLORA', style: AppText.monoLabel),
+            Text('INDEKS FLORA', style: AppText.monoLabel),
             Text(
               '$count →',
               style: const TextStyle(

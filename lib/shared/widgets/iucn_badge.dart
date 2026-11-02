@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/app_theme.dart';
 
@@ -32,7 +31,7 @@ class IucnBadge extends StatelessWidget {
       ),
       child: Text(
         status,
-        style: GoogleFonts.spaceMono(
+        style: TextStyle(fontFamily: 'SpaceMono',
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: color,

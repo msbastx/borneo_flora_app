@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/flora_item.dart';
 
-/// Satu baris pada daftar indeks flora.
+/// Satu entri indeks flora — kartu base-100 seperti daftar portal.
 class FloraRow extends StatelessWidget {
   const FloraRow({super.key, required this.item});
 
@@ -11,54 +11,47 @@ class FloraRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                item.index,
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 12,
-                  color: AppColors.mutedGrey,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.commonName,
-                      style: const TextStyle(
-                        fontFamily: 'serif',
-                        fontSize: 19,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.darkGreen,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      item.scientificName,
-                      style: const TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 12,
-                        color: AppColors.mutedGrey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.base100,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.base300),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            item.index,
+            style: AppText.monoLabel.copyWith(fontSize: 12),
           ),
-        ),
-        const Divider(color: AppColors.divider, thickness: 1, height: 1),
-      ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.commonName,
+                  style: AppText.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item.scientificName,
+                  style: AppText.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.mutedGrey,
+                  ).copyWith(fontStyle: FontStyle.italic),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

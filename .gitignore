@@ -44,5 +44,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-.patch-backups
-.patch_backups
+.zip
+lib&assets&android&pubspec.zip
+
+/.patch-backups
+/.patch_backups
+
+.claude/

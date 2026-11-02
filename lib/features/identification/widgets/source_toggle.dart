@@ -20,7 +20,7 @@ class SourceToggle extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: IdentColors.surface,
+        color: IdentColors.tabTrack,
         borderRadius: BorderRadius.circular(26),
       ),
       child: Row(
@@ -72,7 +72,7 @@ class _Segment extends StatelessWidget {
             child: Text(
               label,
               style: IdentText.label(
-                color: selected ? IdentColors.onLime : IdentColors.bodyOnDark,
+                color: selected ? IdentColors.onLime : IdentColors.mutedOnLight,
                 size: 11,
                 weight: FontWeight.w700,
                 spacing: 1.8,

@@ -38,7 +38,6 @@ dependencies:
   sqflite: ^2.3.0
   path: ^1.9.0
   pytorch_lite: ^4.3.2
-  google_fonts: ^8.2.1
   shared_preferences: ^2.5.5
 
   dio: ^5.7.0
@@ -65,6 +64,37 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/inter-light.ttf
+          weight: 300
+        - asset: assets/fonts/inter-regular.ttf
+          weight: 400
+        - asset: assets/fonts/inter-medium.ttf
+          weight: 500
+        - asset: assets/fonts/inter-semibold.ttf
+          weight: 600
+        - asset: assets/fonts/inter-bold.ttf
+          weight: 700
+        - asset: assets/fonts/inter-extrabold.ttf
+          weight: 800
+    - family: PlayfairDisplay
+      fonts:
+        - asset: assets/fonts/PlayfairDisplay-Bold.ttf
+          weight: 700
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/PlusJakartaSans-Bold.ttf
+          weight: 700
+    - family: SpaceMono
+      fonts:
+        - asset: assets/fonts/SpaceMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/SpaceMono-Bold.ttf
+          weight: 700
   assets:
     - assets/model_flora.ptl
     - assets/class_names.txt

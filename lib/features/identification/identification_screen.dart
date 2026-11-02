@@ -18,6 +18,7 @@ import '../report/repositories/report_queue_repository.dart';
 import 'widgets/capture_view.dart';
 import 'widgets/candidate_result_view.dart';
 import 'widgets/result_view.dart';
+import 'widgets/unidentified_result_view.dart';
 
 class IdentificationScreen extends StatelessWidget {
   const IdentificationScreen({super.key, required this.controller});
@@ -25,15 +26,15 @@ class IdentificationScreen extends StatelessWidget {
   final IdentificationController controller;
 
   ReportQueueRepository _newQueueRepository() => ReportQueueRepository(
-        dio: Dio(
-          BaseOptions(
-            // apiBaseUrl berakhir dengan /api/v1/. Endpoint repo tidak diawali slash.
-            baseUrl: ReportConfig.apiBaseUrl,
-            connectTimeout: const Duration(seconds: 10),
-            receiveTimeout: const Duration(seconds: 20),
-          ),
-        ),
-      );
+    dio: Dio(
+      BaseOptions(
+        // apiBaseUrl berakhir dengan /api/v1/. Endpoint repo tidak diawali slash.
+        baseUrl: ReportConfig.apiBaseUrl,
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 20),
+      ),
+    ),
+  );
 
   Future<({double latitude, double longitude})?> _tryGetLocation() async {
     try {
@@ -67,11 +68,11 @@ class IdentificationScreen extends StatelessWidget {
   }
 
   void _showQueueStatus(
-    BuildContext context,
-    ReportQueueItem? item, {
-    required String reportName,
-    bool noCoordinates = false,
-  }) {
+      BuildContext context,
+      ReportQueueItem? item, {
+        required String reportName,
+        bool noCoordinates = false,
+      }) {
     if (!context.mounted) return;
     final String message;
     if (item?.uploadStatus == UploadStatus.sent) {
@@ -88,10 +89,10 @@ class IdentificationScreen extends StatelessWidget {
   }
 
   Future<void> _showInfo(
-    BuildContext context, {
-    required String title,
-    required String message,
-  }) async {
+      BuildContext context, {
+        required String title,
+        required String message,
+      }) async {
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -127,7 +128,7 @@ class IdentificationScreen extends StatelessWidget {
 
     final bool acceptedForSpeciesFlow =
         top.prediction.probability >= IdentificationConfig.acceptanceThreshold &&
-        top.item?.isVerified == true;
+            top.item?.isVerified == true;
 
     // Candidate state: low model score OR missing/unverified server metadata.
     // Never infer a species' endemic status from a model label alone.
@@ -137,14 +138,14 @@ class IdentificationScreen extends StatelessWidget {
           : null;
       if (!context.mounted) return;
       final String reasonText = top.prediction.probability <
-              IdentificationConfig.acceptanceThreshold
+          IdentificationConfig.acceptanceThreshold
           ? 'Skor kandidat tertinggi ${top.prediction.percentLabel} belum melewati '
-              'ambang penerimaan ${(IdentificationConfig.acceptanceThreshold * 100).toStringAsFixed(2)}%. '
-              'Gambar bisa saja bukan flora atau spesies belum dikenali dengan cukup kuat.'
+          'ambang penerimaan ${(IdentificationConfig.acceptanceThreshold * 100).toStringAsFixed(2)}%. '
+          'Gambar bisa saja bukan flora atau spesies belum dikenali dengan cukup kuat.'
           : 'Model memberi skor ${top.prediction.percentLabel} untuk ${top.prediction.label}, '
-              'tetapi metadata kelas ini belum terverifikasi di katalog server. Skor tinggi '
-              'tidak membuktikan bahwa objek adalah flora; objek makanan atau benda lain juga '
-              'dapat dipaksa ke salah satu dari 75 kelas model.';
+          'tetapi metadata kelas ini belum terverifikasi di katalog server. Skor tinggi '
+          'tidak membuktikan bahwa objek adalah flora; objek makanan atau benda lain juga '
+          'dapat dipaksa ke salah satu dari 75 kelas model.';
       final decision = await showReportSheet(
         context,
         UnknownSpeciesSheet(
@@ -313,40 +314,47 @@ class IdentificationScreen extends StatelessWidget {
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             child: controller.showsResult
-                ? (controller.isConfident
-                    ? ResultView(
-                        key: const ValueKey('verified-result'),
-                        results: controller.results,
-                        isConfident: true,
-                        confidence: controller.confidenceLevel,
-                        image: controller.image,
-                        inferenceTime: controller.inferenceTime,
-                        onBack: controller.reset,
-                        isSaved: controller.isCurrentSaved,
-                        onToggleSaved: controller.toggleSaved,
-                        onRequestVerification: () async {
-                          final IdentifiedFlora? top = controller.topResult;
-                          if (top == null) return;
-                          await _handleVerification(context, top);
-                        },
-                      )
-                    : CandidateResultView(
-                        key: const ValueKey('candidate-result'),
-                        results: controller.results,
-                        confidence: controller.confidenceLevel,
-                        image: controller.image,
-                        inferenceTime: controller.inferenceTime,
-                        onBack: controller.reset,
-                        onRequestVerification: () async {
-                          final IdentifiedFlora? top = controller.topResult;
-                          if (top == null) return;
-                          await _handleVerification(context, top);
-                        },
-                      ))
+                ? (!controller.passesAcceptanceThreshold
+                ? UnidentifiedResultView(
+              key: const ValueKey('unidentified-result'),
+              message:
+              'Gambar ini bukan flora yang dapat dikenali model (misalnya orang, benda, atau objek lain), atau skor prediksi terlalu rendah. Identifikasi spesies tidak tersedia.',
+              onBack: controller.reset,
+            )
+                : controller.isConfident
+                ? ResultView(
+              key: const ValueKey('verified-result'),
+              results: controller.results,
+              isConfident: true,
+              confidence: controller.confidenceLevel,
+              image: controller.image,
+              inferenceTime: controller.inferenceTime,
+              onBack: controller.reset,
+              isSaved: controller.isCurrentSaved,
+              onToggleSaved: controller.toggleSaved,
+              onRequestVerification: () async {
+                final IdentifiedFlora? top = controller.topResult;
+                if (top == null) return;
+                await _handleVerification(context, top);
+              },
+            )
+                : CandidateResultView(
+              key: const ValueKey('candidate-result'),
+              results: controller.results,
+              confidence: controller.confidenceLevel,
+              image: controller.image,
+              inferenceTime: controller.inferenceTime,
+              onBack: controller.reset,
+              onRequestVerification: () async {
+                final IdentifiedFlora? top = controller.topResult;
+                if (top == null) return;
+                await _handleVerification(context, top);
+              },
+            ))
                 : CaptureView(
-                    key: const ValueKey('capture'),
-                    controller: controller,
-                  ),
+              key: const ValueKey('capture'),
+              controller: controller,
+            ),
           );
         },
       ),

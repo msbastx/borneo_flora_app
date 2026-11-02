@@ -1,57 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/app_theme.dart';
 
-/// Palet warna layar Identifikasi dan Hasil Identifikasi.
+/// Palet terang untuk identifikasi (bacaan di luar ruangan).
 class IdentColors {
   IdentColors._();
 
-  // Permukaan gelap
-  static const Color background = Color(0xFF14241A);
-  static const Color surface = Color(0xFF25332A);
-  static const Color viewfinder = Color(0xFF1F3A25);
-  static const Color tipBox = Color(0xFF172A1D);
-  static const Color thumb = Color(0xFF35473A);
-  static const Color heroImage = Color(0xFF26472D);
+  static const Color background = AppColors.base200;
+  static const Color surface = AppColors.base100;
+  static const Color viewfinder = AppColors.base100;
+  static const Color tipBox = AppColors.emerald50;
+  static const Color thumb = AppColors.base300;
+  static const Color heroImage = AppColors.base200;
 
-  // Aksen
-  static const Color lime = AppColors.neonLime;
-  static const Color onLime = Color(0xFF14241A);
-  static const Color amber = Color(0xFFF2B84B);
+  static const Color lime = AppColors.primary;
+  static const Color onLime = AppColors.primaryContent;
+  static const Color amber = Color(0xFFD97706);
   static const Color danger = Color(0xFFC62828);
 
-  // Teks di permukaan gelap
-  static const Color bodyOnDark = Color(0xFFB9C7BC);
-  static const Color mutedOnDark = Color(0xFF8DA395);
+  /// Nama lama; sekarang teks di latar terang.
+  static const Color bodyOnDark = AppColors.baseContent;
+  static const Color mutedOnDark = AppColors.mutedGrey;
 
-  // Permukaan terang
-  static const Color cream = Color(0xFFF2EFE6);
-  static const Color tabTrack = Color(0xFFE2E0D8);
-  static const Color card = Colors.white;
-  static const Color cardBorder = Color(0xFFE4E0D4);
-  static const Color placeholderTile = Color(0xFFEDF0E6);
-  static const Color barTrack = Color(0xFFDEE0D5);
+  static const Color cream = AppColors.base200;
+  static const Color tabTrack = AppColors.base300;
+  static const Color card = AppColors.base100;
+  static const Color cardBorder = AppColors.base300;
+  static const Color placeholderTile = AppColors.placeholder;
+  static const Color barTrack = AppColors.base300;
   static const Color hairline = AppColors.divider;
 
-  // Teks di permukaan terang
-  static const Color green = Color(0xFF1F5A33);
-  static const Color textOnLight = Color(0xFF2B332D);
+  static const Color green = AppColors.primary;
+  static const Color textOnLight = AppColors.baseContent;
   static const Color mutedOnLight = AppColors.mutedGrey;
 }
 
-/// Gaya teks: Playfair Display (judul), Plus Jakarta Sans (isi),
-/// Space Mono (label kecil), sama dengan halaman Panduan.
 class IdentText {
   IdentText._();
 
   static TextStyle label({
-    Color color = IdentColors.mutedOnDark,
+    Color color = IdentColors.mutedOnLight,
     double size = 10,
     FontWeight weight = FontWeight.w400,
     double spacing = 1.6,
   }) =>
-      GoogleFonts.spaceMono(
+      TextStyle(
+        fontFamily: 'SpaceMono',
         fontSize: size,
         letterSpacing: spacing,
         fontWeight: weight,
@@ -60,11 +54,12 @@ class IdentText {
 
   static TextStyle serif({
     double size = 28,
-    Color color = Colors.white,
+    Color color = IdentColors.textOnLight,
     FontWeight weight = FontWeight.w700,
     double height = 1.1,
   }) =>
-      GoogleFonts.playfairDisplay(
+      TextStyle(
+        fontFamily: 'PlayfairDisplay',
         fontSize: size,
         height: height,
         fontWeight: weight,
@@ -78,7 +73,8 @@ class IdentText {
     double height = 1.55,
     FontStyle style = FontStyle.normal,
   }) =>
-      GoogleFonts.plusJakartaSans(
+      TextStyle(
+        fontFamily: 'PlusJakartaSans',
         fontSize: size,
         height: height,
         fontWeight: weight,

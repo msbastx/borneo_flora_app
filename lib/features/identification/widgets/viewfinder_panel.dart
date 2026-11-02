@@ -108,7 +108,7 @@ class _BusyIndicator extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Text(text, style: IdentText.label(color: Colors.white, size: 10)),
+        Text(text, style: IdentText.label(color: IdentColors.textOnLight, size: 10)),
       ],
     );
   }
@@ -142,7 +142,7 @@ class _TipBox extends StatelessWidget {
               message,
               style: IdentText.body(
                 size: 12,
-                color: Colors.white.withValues(alpha: 0.9),
+                color: IdentColors.textOnLight,
                 height: 1.4,
               ),
             ),

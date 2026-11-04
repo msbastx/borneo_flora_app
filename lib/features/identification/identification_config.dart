@@ -15,9 +15,18 @@ abstract final class IdentificationConfig {
   /// Probabilitas minimum untuk label "Keyakinan tinggi" di kartu UI.
   static const double highConfidenceThreshold = 0.75;
 
-  /// Ambang awal development untuk menghindari penerimaan skor rendah.
-  /// Kalibrasikan dengan kumpulan uji flora dan non-flora sebelum digunakan
-  /// sebagai angka final. Softmax tinggi tidak membuktikan gambar adalah flora.
+  /// Pengali logit yang sama dengan `FixedLogitScaleModel(scale=0.3)` pada
+  /// portal Django (`apps/identifier/services.py`).
+  ///
+  /// Aset `.ptl` hasil ekspor sudah memuat pengali ini di dalam graph, jadi
+  /// nilainya 1.0. Nilai ini hanya jadi pengaman bila aset dimuat tanpa
+  /// wrapper: logit mentah membuat softmax terlalu tajam sehingga gambar
+  /// non-flora ikut lolos ambang penerimaan.
+  static const double logitScale = 1.0;
+
+  /// Ambang penerimaan hasil, sama dengan `best_threshold` di portal
+  /// (`identifier/services.py`). Di bawah ambang ini hasil dianggap
+  /// "tidak dapat diidentifikasi".
   static const String _acceptanceThresholdText = String.fromEnvironment(
     'FLORA_ACCEPTANCE_THRESHOLD',
     defaultValue: '0.9929907321929932',

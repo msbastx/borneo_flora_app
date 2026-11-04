@@ -72,7 +72,14 @@ class FloraClassifier {
       );
     }
 
-    final List<double> probabilities = softmax(logits);
+    // Skala logit harus sama dengan portal. Aset `.ptl` sudah memuat
+    // pengali 0.3 di dalam graph, jadi `logitScale` di sini bernilai 1.0.
+    // Pengaman tambahan bila aset dimuat tanpa wrapper skala.
+    final List<double> scaledLogits = logits
+        .map((value) => value * IdentificationConfig.logitScale)
+        .toList();
+
+    final List<double> probabilities = softmax(scaledLogits);
 
     final List<FloraPrediction> predictions = List.generate(
       probabilities.length,
@@ -80,7 +87,7 @@ class FloraClassifier {
         index: i,
         label: _labels[i],
         probability: probabilities[i],
-        logit: logits[i],
+        logit: scaledLogits[i],
       ),
     );
     predictions.sort((a, b) => b.probability.compareTo(a.probability));

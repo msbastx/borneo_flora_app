@@ -42,9 +42,9 @@ class UnidentifiedResultView extends StatelessWidget {
                   'Tidak dapat diidentifikasi',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: IdentColors.textOnLight,
-                  ),
+                        fontWeight: FontWeight.w700,
+                        color: IdentColors.textOnLight,
+                      ),
                 ),
                 const SizedBox(height: 16),
                 Text(

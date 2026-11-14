@@ -5,12 +5,12 @@ import 'package:flutter/services.dart';
 
 import '../core/constants/app_assets.dart';
 import '../core/utils/scientific_name.dart';
-import 'dummy_data.dart';
+import 'local_flora_seed.dart';
 import 'models/flora_item.dart';
 
 class FloraRepository {
   FloraRepository({List<FloraItem>? items}) {
-    final initial = items ?? _cachedStaticItems ?? dummyFloraList;
+    final initial = items ?? _cachedStaticItems ?? localFloraSeed;
     _setItems(initial);
   }
 
@@ -30,13 +30,13 @@ class FloraRepository {
   /// tidak dianggap valid kecuali sumber menyertakan is_verified=true.
   Future<void> ensureLoadedFromAssets() async {
     final cached = _cachedStaticItems;
-    if (cached != null && cached.length > dummyFloraList.length) {
+    if (cached != null && cached.length > localFloraSeed.length) {
       _setItems(cached);
       return;
     }
 
-    final Map<String, FloraItem> dummyByKey = {
-      for (final FloraItem item in dummyFloraList) item.parsedName.key: item,
+    final Map<String, FloraItem> seedByKey = {
+      for (final FloraItem item in localFloraSeed) item.parsedName.key: item,
     };
     final List<FloraItem> loaded = [];
 
@@ -49,12 +49,12 @@ class FloraRepository {
           if (row is! Map) continue;
           final entry = Map<String, dynamic>.from(row);
           final String label = (entry['model_label'] ??
-                  entry['scientific_name'] ?? entry['label'] ?? '')
+              entry['scientific_name'] ?? entry['label'] ?? '')
               .toString().trim();
           if (label.isEmpty) continue;
 
           final String nameKey = ScientificName.parse(label).key;
-          final FloraItem? dummy = dummyByKey[nameKey];
+          final FloraItem? seed = seedByKey[nameKey];
           final bool verified = entry['is_verified'] == true;
           final String type = (entry['species_type'] ?? entry['type'] ?? '')
               .toString().trim().toLowerCase();
@@ -79,7 +79,7 @@ class FloraRepository {
             commonName: commonName,
             scientificName: scientificName,
             family: verified ? _valid(entry['family_name'] ?? entry['family']) : null,
-            localNames: verified ? (dummy?.localNames ?? const []) : const [],
+            localNames: verified ? (seed?.localNames ?? const []) : const [],
             description: verified
                 ? _description(entry['description'] ?? entry['short_summary'])
                 : const [],

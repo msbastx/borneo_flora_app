@@ -1,28 +1,32 @@
 import 'package:dio/dio.dart';
+import '../config/server_config.dart';
 
 /// Satu konfigurasi HTTP untuk seluruh API Django.
 ///
-/// Default ditujukan untuk Android Emulator yang mengakses host Docker.
-/// Untuk Flutter Windows, jalankan dengan:
-/// --dart-define=API_BASE_URL=http://127.0.0.1:8001/api/v1/
+/// Base URL diturunkan dari `ServerConfig`, sehingga API REST, katalog WebView,
+/// dan peta WebView dijamin menunjuk ke host yang sama.
+///
+/// Production (default, tanpa --dart-define):
+///   flutter build apk --release          -> https://kalimantanbio.com
+///
+/// Development via Wi-Fi (HP fisik):
+///   flutter run --dart-define=IS_LOCAL_DEV=true --dart-define=LOCAL_HOST=192.168.1.14
+///
+/// Development via USB:
+///   adb reverse tcp:8001 tcp:8001
+///   flutter run --dart-define=IS_LOCAL_DEV=true --dart-define=LOCAL_HOST=127.0.0.1
 class ApiClient {
   ApiClient({Dio? dio, String? baseUrl})
       : dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: ApiClient._withTrailingSlash(
-                  baseUrl ??
-                      const String.fromEnvironment(
-                        'API_BASE_URL',
-                        defaultValue: 'http://10.0.2.2:8001/api/v1/',
-                      ),
-                ),
-                connectTimeout: const Duration(seconds: 5),
-                receiveTimeout: const Duration(seconds: 8),
-                sendTimeout: const Duration(seconds: 8),
-                headers: const {'Accept': 'application/json'},
-              ),
-            );
+      Dio(
+        BaseOptions(
+          baseUrl: baseUrl ?? ApiClient._withTrailingSlash(ServerConfig.apiBaseUrl),
+          connectTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 8),
+          sendTimeout: const Duration(seconds: 8),
+          headers: const {'Accept': 'application/json'},
+        ),
+      );
 
   final Dio dio;
 

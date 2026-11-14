@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../data/dummy_data.dart';
+import '../../data/flora_repository.dart';
+import '../../data/models/flora_item.dart';
 import 'widgets/flora_index_header.dart';
 import 'widgets/flora_row.dart';
 import 'widgets/home_header.dart';
 import 'widgets/viewfinder_card.dart';
 
 /// Tab Home — hero selaras kalimantanbio.com + identifikasi mobile.
-class FloraHomeScreen extends StatelessWidget {
+class FloraHomeScreen extends StatefulWidget {
   const FloraHomeScreen({
     super.key,
     required this.onOpenCamera,
@@ -25,88 +26,172 @@ class FloraHomeScreen extends StatelessWidget {
   final VoidCallback onOpenMap;
 
   @override
+  State<FloraHomeScreen> createState() => _FloraHomeScreenState();
+}
+
+class _FloraHomeScreenState extends State<FloraHomeScreen> {
+  final FloraRepository _repository = FloraRepository();
+  late Future<List<FloraItem>> _floraFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _floraFuture = _loadFlora();
+  }
+
+  Future<List<FloraItem>> _loadFlora() async {
+    await _repository.ensureLoadedFromAssets();
+    return _repository.all;
+  }
+
+  void _reload() {
+    setState(() {
+      _floraFuture = _loadFlora();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ColoredBox(
       color: AppColors.base200,
       child: SafeArea(
         bottom: false,
-        child: CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    HomeHeader(onMenuSelected: onMenuSelected),
-                    const SizedBox(height: 20),
-                    const _LiveDataBadge(),
-                    const SizedBox(height: 20),
-                    Text('Temukan', style: AppText.homeTitle),
-                    ShaderMask(
-                      blendMode: BlendMode.srcIn,
-                      shaderCallback: (bounds) =>
-                          portalHeroGradient.createShader(bounds),
-                      child: Text(
-                        'Jantung Borneo',
-                        style: AppText.homeTitle.copyWith(color: Colors.white),
+        child: FutureBuilder<List<FloraItem>>(
+          future: _floraFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(28),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.cloud_off_rounded,
+                        size: 44,
+                        color: AppColors.mutedGrey,
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Portal informasi keanekaragaman hayati dan konservasi '
-                      'Kalimantan. Akses data sebaran spesies, kondisi hutan, '
-                      'dan riset terbaru untuk pelestarian alam.',
-                      style: AppText.homeSubtitle,
-                    ),
-                    const SizedBox(height: 20),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
+                      const SizedBox(height: 12),
+                      Text(
+                        'Daftar flora belum dapat dimuat.',
+                        style: AppText.homeSubtitle,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Material(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          onTap: _reload,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 14,
+                            ),
+                            child: Text(
+                              'Coba lagi',
+                              style: AppText.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryContent,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            final List<FloraItem> flora = snapshot.data ?? const <FloraItem>[];
+
+            return CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _PortalPrimaryButton(
-                          label: 'Jelajahi Database',
-                          icon: Icons.arrow_forward_rounded,
-                          onTap: onOpenCatalog,
+                        HomeHeader(onMenuSelected: widget.onMenuSelected),
+                        const SizedBox(height: 20),
+                        const _LiveDataBadge(),
+                        const SizedBox(height: 20),
+                        Text('Temukan', style: AppText.homeTitle),
+                        ShaderMask(
+                          blendMode: BlendMode.srcIn,
+                          shaderCallback: (bounds) =>
+                              portalHeroGradient.createShader(bounds),
+                          child: Text(
+                            'Jantung Borneo',
+                            style:
+                            AppText.homeTitle.copyWith(color: Colors.white),
+                          ),
                         ),
-                        _PortalOutlineButton(
-                          label: 'Lihat Peta',
-                          icon: Icons.map_outlined,
-                          onTap: onOpenMap,
+                        const SizedBox(height: 16),
+                        Text(
+                          'Portal informasi keanekaragaman hayati dan konservasi '
+                              'Kalimantan. Akses data sebaran spesies, kondisi hutan, '
+                              'dan riset terbaru untuk pelestarian alam.',
+                          style: AppText.homeSubtitle,
                         ),
+                        const SizedBox(height: 20),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: [
+                            _PortalPrimaryButton(
+                              label: 'Jelajahi Database',
+                              icon: Icons.arrow_forward_rounded,
+                              onTap: widget.onOpenCatalog,
+                            ),
+                            _PortalOutlineButton(
+                              label: 'Lihat Peta',
+                              icon: Icons.map_outlined,
+                              onTap: widget.onOpenMap,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 28),
+                        _HomeStats(speciesCount: flora.length),
+                        const SizedBox(height: 32),
+                        Text(
+                          'ALAT IDENTIFIKASI',
+                          style: AppText.sectionLabel,
+                        ),
+                        const SizedBox(height: 12),
+                        ViewfinderCard(
+                          onCapture: widget.onOpenCamera,
+                          onGallery: widget.onOpenGallery,
+                        ),
+                        const SizedBox(height: 32),
+                        FloraIndexHeader(count: flora.length),
                       ],
                     ),
-                    const SizedBox(height: 28),
-                    _HomeStats(speciesCount: dummyFloraList.length),
-                    const SizedBox(height: 32),
-                    Text(
-                      'ALAT IDENTIFIKASI',
-                      style: AppText.sectionLabel,
-                    ),
-                    const SizedBox(height: 12),
-                    ViewfinderCard(
-                      onCapture: onOpenCamera,
-                      onGallery: onOpenGallery,
-                    ),
-                    const SizedBox(height: 32),
-                    FloraIndexHeader(count: dummyFloraList.length),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList.builder(
-                itemCount: dummyFloraList.length,
-                itemBuilder: (_, i) => FloraRow(item: dummyFloraList[i]),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: MediaQuery.paddingOf(context).bottom + 96,
-              ),
-            ),
-          ],
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverList.builder(
+                    itemCount: flora.length,
+                    itemBuilder: (_, i) => FloraRow(item: flora[i]),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: MediaQuery.paddingOf(context).bottom + 96,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

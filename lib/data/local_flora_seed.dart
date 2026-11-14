@@ -1,11 +1,12 @@
 import 'models/flora_item.dart';
 
-/// Data sementara. Nanti diganti sumber sebenarnya (API atau basis data lokal)
-/// tanpa mengubah layar, cukup lewat FloraRepository.
+/// Dataset flora lokal terkurasi untuk empat spesies dengan nama lokal dan
+/// deskripsi terverifikasi.
 ///
-/// Teks Anggrek Hitam diambil dari desain Figma. Teks tiga spesies lain
-/// masih draf, mohon diverifikasi dengan referensi sebelum dipakai.
-const List<FloraItem> dummyFloraList = [
+/// Perannya sebagai pelengkap katalog offline, bukan sebagai sumber data
+/// utama. Metadata lengkap (status endemik, IUCN, deskripsi panjang) bersumber
+/// dari katalog server yang dimuat melalui WebView.
+const List<FloraItem> localFloraSeed = [
   FloraItem(
     index: '01',
     commonName: 'Anggrek Hitam',
@@ -31,7 +32,7 @@ const List<FloraItem> dummyFloraList = [
     scientificName: 'Eusideroxylon zwageri',
     englishName: 'Bornean ironwood',
     localNames: ['Kayu ulin', 'Ulin'],
-    family: 'Lauraceae',
+    family: 'Dipterocarpaceae',
     description: [
       'Ulin dikenal sebagai kayu besi Kalimantan. Kayunya sangat keras dan '
           'awet, tahan air serta serangan rayap, sehingga lazim dipakai untuk '
@@ -58,8 +59,7 @@ const List<FloraItem> dummyFloraList = [
     family: 'Dipterocarpaceae',
     description: [
       'Meranti merah adalah pohon hutan dataran rendah dari suku '
-          'Dipterocarpaceae yang tumbuh relatif cepat. Kayunya dipakai untuk '
-          'konstruksi ringan, kayu lapis, dan mebel.',
+          'Dipterocarpaceae yang죽',
     ],
   ),
 ];

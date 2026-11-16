@@ -9,6 +9,9 @@ import 'candidate_list.dart';
 import 'result_actions.dart';
 import 'result_header.dart';
 import 'species_info_tabs.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../../../core/config/server_config.dart';
 
 /// Tahap 2: hasil identifikasi. Menerima data langsung (bukan controller)
 /// supaya tampilannya tetap utuh saat animasi pergantian layar berjalan.
@@ -36,10 +39,41 @@ class ResultView extends StatelessWidget {
   final VoidCallback onToggleSaved;
   final VoidCallback onRequestVerification;
 
-  void _comingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$feature belum tersedia.')));
+  /// Membagikan hasil identifikasi ke aplikasi lain (WhatsApp, Telegram,
+  /// email, dll.) melalui share sheet sistem.
+  Future<void> _shareResult(BuildContext context, IdentifiedFlora flora) async {
+    try {
+      final StringBuffer buffer = StringBuffer();
+      buffer.writeln(flora.title);
+
+      if (flora.showsScientificName) {
+        buffer.writeln(flora.scientificName);
+      }
+
+      final String? caption = flora.caption;
+      if (caption != null && caption.isNotEmpty) {
+        buffer.writeln(caption);
+      }
+
+      final int? serverId = flora.item?.serverId;
+      if (serverId != null) {
+        buffer
+          ..writeln()
+          ..write('Info lengkap: ${ServerConfig.speciesWebUrl(serverId)}');
+      }
+
+      await Share.share(
+        buffer.toString(),
+        subject: flora.title,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Gagal berbagi hasil identifikasi.')),
+        );
+    }
   }
 
   @override
@@ -62,7 +96,7 @@ class ResultView extends StatelessWidget {
                   image: image,
                   inferenceTime: inferenceTime,
                   onBack: onBack,
-                  onShare: () => _comingSoon(context, 'Bagikan'),
+                  onShare: () => _shareResult(context, top),
                 ),
               ),
               SliverToBoxAdapter(

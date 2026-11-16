@@ -42,8 +42,8 @@ class ServerConfig {
   static const String catalogWebViewUrl = '$baseUrl/repository/?kingdom=2';
   static const String mapDistributionWebViewUrl = '$baseUrl/gis/map/species/';
 
-  /// Link web kanonik untuk satu spesies (dipakai fitur berbagi).
-  static String speciesWebUrl(String slug) => '$baseUrl/repository/$slug/';
+  /// Link web kanonik untuk satu spesies. Portal memakai id numerik.
+  static String speciesWebUrl(int id) => '$baseUrl/repository/$id/';
 
   static const int approximationRadiusKm = 10;
 }

@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import '../core/storage/app_prefs.dart';
 import '../core/theme/app_theme.dart';
+import '../core/ui/app_messenger.dart';
 import '../features/home/home_screen.dart';
 import '../features/home/flora_index_screen.dart';
 import '../features/guide/capture_guide_screen.dart';
@@ -12,8 +13,12 @@ import '../features/identification/identification_controller.dart';
 import '../features/identification/identification_screen.dart';
 import '../features/identification/identification_theme.dart';
 import '../features/identification/models/identification_source.dart';
+import '../features/profile/reporter_profile_dialog.dart';
 import '../features/report/report_config.dart';
+import '../features/report/models/report_queue_item.dart';
+import '../features/report/report_status_screen.dart';
 import '../features/report/repositories/report_queue_repository.dart';
+import '../features/report/services/queue_runner.dart';
 import '../shared/widgets/navbar.dart';
 import '../shared/widgets/portal_webview_tab.dart';
 
@@ -31,8 +36,9 @@ class _AppShellState extends State<AppShell> {
   static const int _identTab = 1;
 
   final IdentificationController _ident = IdentificationController();
-  late final ReportQueueRepository _reportQueue;
+  final ReportQueueRepository _reportQueue = ReportQueueRepository.instance;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+  StreamSubscription<QueueRunResult>? _queueResultSub;
 
   int _index = _homeTab;
   bool _useWebViewCatalog = true; // WebView katalog utama; aset statis tetap tersedia sebagai fallback offline
@@ -41,12 +47,14 @@ class _AppShellState extends State<AppShell> {
   void initState() {
     super.initState();
 
-    // Inisialisasi Dio & Antrean Laporan Offline-First ke Server Lokal / Production
-    final dio = Dio(BaseOptions(baseUrl: ReportConfig.apiBaseUrl));
-    _reportQueue = ReportQueueRepository(dio: dio);
+    // Notifikasi setiap kali satu putaran pengiriman antrean selesai.
+    _queueResultSub = _reportQueue.results.listen(_announceQueueResult);
 
     // Coba kirim antrean laporan yang masih PENDING saat aplikasi baru dibuka
     _processQueueSafely();
+
+    // Pengguna baru: tanya nama dan email setelah panduan selesai.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _askProfileOnce());
 
     // Pantau perubahan jaringan: otomatis kirim antrean saat internet kembali aktif
     _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
@@ -60,11 +68,55 @@ class _AppShellState extends State<AppShell> {
   void _processQueueSafely() {
     unawaited(_reportQueue.processQueue().catchError((Object error) {
       debugPrint('[ReportQueue] Gagal memproses antrean: $error');
+      return null;
     }));
+  }
+
+  /// Formulir nama dan email muncul sekali, setelah panduan pertama selesai.
+  Future<void> _askProfileOnce() async {
+    if (await AppPrefs.hasAskedProfile()) return;
+    if (!mounted) return;
+    await showReporterProfileDialog(context, firstTime: true);
+  }
+
+  void _announceQueueResult(QueueRunResult result) {
+    if (result.failed.isNotEmpty) {
+      final ReportQueueItem first = result.failed.first;
+      AppMessenger.show(
+        result.failed.length == 1
+            ? '${first.reportType.label} ditolak server. ${first.lastError ?? ''}'.trim()
+            : '${result.failed.length} laporan ditolak server.',
+        action: SnackBarAction(label: 'Lihat', onPressed: _openReportStatus),
+        duration: const Duration(seconds: 6),
+      );
+      return;
+    }
+    if (result.sent.isNotEmpty) {
+      final String text = result.sent.length == 1
+          ? '${result.sent.first.reportType.label} berhasil terkirim ke server.'
+          : '${result.sent.length} laporan berhasil terkirim ke server.';
+      AppMessenger.show(result.pendingCount > 0
+          ? '$text ${result.pendingCount} laporan masih menunggu.'
+          : text);
+      return;
+    }
+    if (result.stoppedOffline && result.pendingCount > 0) {
+      AppMessenger.show(
+        'Server belum dapat dijangkau. ${result.pendingCount} laporan menunggu '
+        'dan dikirim otomatis saat jaringan tersedia.',
+      );
+    }
+  }
+
+  void _openReportStatus() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ReportStatusScreen()),
+    );
   }
 
   @override
   void dispose() {
+    _queueResultSub?.cancel();
     _connectivitySub?.cancel();
     _ident.dispose();
     super.dispose();
@@ -144,15 +196,33 @@ class _AppShellState extends State<AppShell> {
                   const Divider(),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.cloud_sync_outlined, color: AppColors.darkGreen),
-                    title: const Text('Sinkronkan Antrean Laporan Sekarang'),
-                    subtitle: const Text('Kirim laporan tertunda (PENDING) ke server.'),
+                    leading: const Icon(Icons.person_outline, color: AppColors.darkGreen),
+                    title: const Text('Profil Pelapor'),
+                    subtitle: const Text('Nama, email, dan izin kirim otomatis foto dataset.'),
                     onTap: () {
                       Navigator.of(context).pop();
+                      showReporterProfileDialog(this.context);
+                    },
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.outbox_outlined, color: AppColors.darkGreen),
+                    title: const Text('Status Laporan'),
+                    subtitle: const Text('Lihat laporan yang terkirim, menunggu, atau ditolak.'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _openReportStatus();
+                    },
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.cloud_sync_outlined, color: AppColors.darkGreen),
+                    title: const Text('Kirim Antrean Laporan Sekarang'),
+                    subtitle: const Text('Kirim laporan yang masih menunggu ke server.'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      AppMessenger.show('Mengirim antrean laporan ke server...');
                       _processQueueSafely();
-                      ScaffoldMessenger.of(this.context).showSnackBar(
-                        const SnackBar(content: Text('Memproses antrean laporan ke server...')),
-                      );
                     },
                   ),
                 ],

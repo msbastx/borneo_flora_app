@@ -1,9 +1,20 @@
+/// Jenis laporan yang dikirim aplikasi ke server.
+///
+/// [endpoint] adalah path baru yang ikut menyimpan identitas pelapor.
+/// [legacyEndpoint] adalah path lama, dipakai bila server belum diperbarui.
 enum ReportType {
-  unknownImage('UNKNOWN_IMAGE'),
-  endemicFinding('ENDEMIC_FINDING');
+  unknownImage('UNKNOWN_IMAGE', 'reports/unknown-images/', 'unknown-images/',
+      'Laporan flora tidak dikenali'),
+  endemicFinding('ENDEMIC_FINDING', 'reports/findings/', 'findings/',
+      'Laporan temuan flora endemik'),
+  genericSighting('GENERIC_SIGHTING', 'reports/sightings/', 'sightings/',
+      'Foto flora untuk dataset');
 
   final String value;
-  const ReportType(this.value);
+  final String endpoint;
+  final String legacyEndpoint;
+  final String label;
+  const ReportType(this.value, this.endpoint, this.legacyEndpoint, this.label);
 
   static ReportType fromString(String val) =>
       values.firstWhere((e) => e.value == val, orElse: () => ReportType.unknownImage);
@@ -39,6 +50,13 @@ class ReportQueueItem {
   final String? modelVersion;
   final bool coordinateApproximate;
 
+  /// Label model, dipakai server untuk mencocokkan spesies pada laporan dataset.
+  final String? scientificName;
+
+  /// Diisi dari formulir profil saat laporan dibuat.
+  final String? reporterName;
+  final String? reporterEmail;
+
   const ReportQueueItem({
     required this.id,
     this.historyId,
@@ -55,7 +73,12 @@ class ReportQueueItem {
     this.confidence,
     this.modelVersion,
     this.coordinateApproximate = false,
+    this.scientificName,
+    this.reporterName,
+    this.reporterEmail,
   });
+
+  bool get hasCoordinates => latitude != null && longitude != null;
 
   ReportQueueItem copyWith({
     String? imagePath,
@@ -78,7 +101,44 @@ class ReportQueueItem {
         confidence: confidence,
         modelVersion: modelVersion,
         coordinateApproximate: coordinateApproximate,
+        scientificName: scientificName,
+        reporterName: reporterName,
+        reporterEmail: reporterEmail,
       );
+
+  /// Kolom teks untuk permintaan multipart (tanpa berkas citra).
+  ///
+  /// [includeReporter] false dipakai saat mengirim ke endpoint lama, yang
+  /// belum mengenal kolom identitas pelapor.
+  Map<String, String> formFields({bool includeReporter = true}) {
+    final Map<String, String> fields = {
+      'client_id': id,
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'allow_training': allowTraining ? 'true' : 'false',
+      'coordinate_approximate': coordinateApproximate ? 'true' : 'false',
+    };
+    void put(String key, Object? value) {
+      if (value == null) return;
+      final String text = value.toString().trim();
+      if (text.isNotEmpty) fields[key] = text;
+    }
+
+    put('ai_key', aiKey);
+    if (hasCoordinates) {
+      put('latitude', latitude);
+      put('longitude', longitude);
+    }
+    put('confidence', confidence);
+    put('model_version', modelVersion);
+    if (reportType == ReportType.genericSighting) {
+      put('scientific_name', scientificName);
+    }
+    if (includeReporter) {
+      put('reporter_name', reporterName);
+      put('reporter_email', reporterEmail);
+    }
+    return fields;
+  }
 
   Map<String, dynamic> toMap() => {
         'id': id,
@@ -96,6 +156,9 @@ class ReportQueueItem {
         'confidence': confidence,
         'model_version': modelVersion,
         'coordinate_approximate': coordinateApproximate ? 1 : 0,
+        'scientific_name': scientificName,
+        'reporter_name': reporterName,
+        'reporter_email': reporterEmail,
       };
 
   factory ReportQueueItem.fromMap(Map<String, dynamic> map) => ReportQueueItem(
@@ -114,5 +177,8 @@ class ReportQueueItem {
         confidence: (map['confidence'] as num?)?.toDouble(),
         modelVersion: map['model_version'] as String?,
         coordinateApproximate: (map['coordinate_approximate'] as int? ?? 0) == 1,
+        scientificName: map['scientific_name'] as String?,
+        reporterName: map['reporter_name'] as String?,
+        reporterEmail: map['reporter_email'] as String?,
       );
 }

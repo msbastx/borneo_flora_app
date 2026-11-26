@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'core/storage/app_prefs.dart';
 import 'app/app_shell.dart';
 import 'core/theme/app_theme.dart';
+import 'core/ui/app_messenger.dart';
 import 'features/guide/capture_guide_screen.dart';
 
 Future<void> main() async {
@@ -21,6 +22,7 @@ class FloraApp extends StatelessWidget {
     return MaterialApp(
       title: 'Borneo Biodiversity Portal',
       debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: AppMessenger.key,
       theme: buildAppTheme(),
       home: seenGuide ? const AppShell() : const _FirstLaunchGuide(),
     );

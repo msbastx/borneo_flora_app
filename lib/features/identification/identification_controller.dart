@@ -10,6 +10,7 @@ import '../../data/species_api_repository.dart';
 import '../../data/history/identification_history_repository.dart';
 import '../../data/history/identification_record.dart';
 import '../../data/history/sqlite_history_repository.dart';
+import '../report/services/report_flow.dart';
 import 'identification_config.dart';
 import 'models/confidence_level.dart';
 import 'models/flora_prediction.dart';
@@ -27,7 +28,9 @@ class IdentificationController extends ChangeNotifier {
     FloraRepository? repository,
     SpeciesApiRepository? speciesApiRepository,
     IdentificationHistoryRepository? history,
+    ReportFlow? reports,
   })  : _classifier = classifier ?? FloraClassifier(),
+        _reports = reports,
         _picker = picker ?? ImagePicker(),
         _repository = repository ?? FloraRepository(),
         _speciesApiRepository = speciesApiRepository ?? SpeciesApiRepository(),
@@ -39,11 +42,15 @@ class IdentificationController extends ChangeNotifier {
   final SpeciesApiRepository _speciesApiRepository;
   final IdentificationHistoryRepository _history;
 
+  /// Dibuat saat pertama dipakai, agar tes controller tidak membuka SQLite.
+  ReportFlow? _reports;
+
   IdentificationStatus _status = IdentificationStatus.loadingModel;
   IdentificationSource _source = IdentificationSource.camera;
   CameraDevice _cameraDevice = CameraDevice.rear;
   File? _image;
   File? _recentImage;
+  DateTime? _capturedAt;
   List<IdentifiedFlora> _results = const [];
   Duration? _inferenceTime;
   IdentificationRecord? _record;
@@ -64,6 +71,9 @@ class IdentificationController extends ChangeNotifier {
 
   /// Gambar yang sedang diproses atau sedang ditampilkan pada hasil.
   File? get image => _image;
+
+  /// Waktu gambar yang sedang ditampilkan diambil atau dipilih.
+  DateTime? get capturedAt => _capturedAt;
 
   /// Gambar terakhir yang dipilih, untuk gambar mini di samping tombol potret.
   File? get recentImage => _recentImage;
@@ -202,6 +212,7 @@ class IdentificationController extends ChangeNotifier {
     if (_status == IdentificationStatus.predicting) return;
     _identifyGeneration++;
     _image = null;
+    _capturedAt = null;
     _results = const [];
     _inferenceTime = null;
     _record = null;
@@ -227,6 +238,7 @@ class IdentificationController extends ChangeNotifier {
       final DateTime capturedAt = DateTime.now();
       final int generation = ++_identifyGeneration;
       _image = File(picked.path);
+      _capturedAt = capturedAt;
       _recentImage = _image;
       _results = const [];
       _inferenceTime = null;
@@ -304,6 +316,31 @@ class IdentificationController extends ChangeNotifier {
       if (_disposed || generation != _identifyGeneration) return;
     }
     notifyListeners();
+    unawaited(_autoSubmitSighting(capturedAt));
+  }
+
+  /// Foto flora non-endemik yang terverifikasi dikirim otomatis untuk dataset,
+  /// bila pengguna sudah mengizinkannya pada formulir profil.
+  Future<void> _autoSubmitSighting(DateTime capturedAt) async {
+    final IdentifiedFlora? top = topResult;
+    final File? image = _image;
+    final item = top?.item;
+    if (top == null || image == null || item == null) return;
+    if (!isConfident || !item.endemicStatusKnown || item.isEndemic) return;
+    try {
+      _reports ??= ReportFlow();
+      await _reports!.autoSubmitSighting(ReportSource(
+        imagePath: image.path,
+        capturedAt: capturedAt,
+        aiKey: top.prediction.index,
+        label: top.prediction.label,
+        confidence: top.prediction.probability,
+        historyId: _record?.id,
+        modelVersion: IdentificationConfig.modelVersion,
+      ));
+    } catch (e) {
+      debugPrint('Gagal mengirim otomatis foto dataset: $e');
+    }
   }
 
   Future<IdentificationRecord?> _recordResult(DateTime capturedAt) async {

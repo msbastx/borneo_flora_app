@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -7,82 +9,163 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../../core/storage/app_database.dart';
 import '../models/report_queue_item.dart';
+import '../report_config.dart';
+import '../services/dio_report_sender.dart';
+import '../services/queue_runner.dart';
 
-class ReportQueueRepository {
+/// Antrean laporan offline (store-and-forward) di atas tabel `report_queue`.
+///
+/// Pakai [ReportQueueRepository.instance] di seluruh aplikasi agar hanya ada
+/// satu antrean dan satu putaran pengiriman. Setiap putaran yang selesai
+/// diumumkan lewat [results], dan dipakai `AppShell` untuk notifikasi.
+class ReportQueueRepository implements ReportQueueStore {
+  ReportQueueRepository({
+    AppDatabase? dbHelper,
+    required Dio dio,
+    ReportSender? sender,
+    Future<bool> Function()? hasNetwork,
+  }) : _dbHelper = dbHelper ?? AppDatabase.instance {
+    _runner = QueueRunner(
+      store: this,
+      sender: sender ?? DioReportSender(dio),
+      hasNetwork: hasNetwork ?? _deviceHasNetwork,
+    );
+  }
+
+  static ReportQueueRepository? _instance;
+
+  static ReportQueueRepository get instance => _instance ??= ReportQueueRepository(
+        dio: Dio(
+          BaseOptions(
+            baseUrl: ReportConfig.apiBaseUrl,
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 30),
+            sendTimeout: const Duration(seconds: 30),
+            headers: const {'Accept': 'application/json'},
+          ),
+        ),
+      );
+
   final AppDatabase _dbHelper;
-  final Dio _dio;
-  static bool _isProcessingQueue = false;
-  static bool _processQueueAgain = false;
+  late final QueueRunner _runner;
 
-  ReportQueueRepository({AppDatabase? dbHelper, required Dio dio})
-      : _dbHelper = dbHelper ?? AppDatabase.instance,
-        _dio = dio;
+  final StreamController<QueueRunResult> _results =
+      StreamController<QueueRunResult>.broadcast();
 
-  Future<void> enqueue(ReportQueueItem item) async {
-    // image_picker commonly returns a cache/temp path. Copy it into the app's
-    // documents directory so an offline report can survive process restarts.
-    final persistedItem = await _persistImage(item);
-    final db = await _dbHelper.database;
-    await db.insert('report_queue', persistedItem.toMap(),
+  /// Ringkasan setiap putaran pengiriman yang selesai.
+  Stream<QueueRunResult> get results => _results.stream;
+
+  static Future<bool> _deviceHasNetwork() async {
+    try {
+      final List<ConnectivityResult> state = await Connectivity().checkConnectivity();
+      return state.any((r) => r != ConnectivityResult.none);
+    } catch (_) {
+      return true; // Biarkan percobaan HTTP yang menentukan.
+    }
+  }
+
+  Future<bool> hasNetwork() => _deviceHasNetwork();
+
+  // ------------------------------------------------------------------
+  // Menulis antrean
+  // ------------------------------------------------------------------
+
+  /// Menyalin citra ke folder aplikasi lalu menyimpan laporan sebagai PENDING.
+  Future<ReportQueueItem> enqueue(ReportQueueItem item) async {
+    // image_picker sering mengembalikan path cache sementara. Citra disalin ke
+    // folder dokumen agar laporan offline tetap ada setelah aplikasi ditutup.
+    final ReportQueueItem persisted = await _persistImage(item);
+    final Database db = await _dbHelper.database;
+    await db.insert('report_queue', persisted.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
+    return persisted;
   }
 
   Future<ReportQueueItem> _persistImage(ReportQueueItem item) async {
-    final source = File(item.imagePath);
+    final File source = File(item.imagePath);
     if (!await source.exists()) {
-      throw const _PermanentQueueException(
+      throw const ReportQueueException(
         'Berkas citra tidak ditemukan; laporan belum masuk antrean.',
       );
     }
-
     final String extension = p.extension(source.path).toLowerCase();
     if (!const {'.jpg', '.jpeg', '.png'}.contains(extension)) {
-      throw const _PermanentQueueException(
-        'Format citra antrean harus JPG, JPEG, atau PNG.',
-      );
+      throw const ReportQueueException('Format citra harus JPG, JPEG, atau PNG.');
     }
-
-    final appDirectory = await getApplicationDocumentsDirectory();
-    final imageDirectory = Directory(p.join(appDirectory.path, 'mobile_report_queue'));
+    final Directory appDirectory = await getApplicationDocumentsDirectory();
+    final Directory imageDirectory =
+        Directory(p.join(appDirectory.path, 'mobile_report_queue'));
     await imageDirectory.create(recursive: true);
-    final destination = File(p.join(imageDirectory.path, '${item.id}$extension'));
+    final File destination = File(p.join(imageDirectory.path, '${item.id}$extension'));
     if (!await destination.exists()) {
       await source.copy(destination.path);
     }
-
     return item.copyWith(imagePath: destination.path);
   }
 
+  // ------------------------------------------------------------------
+  // Membaca antrean
+  // ------------------------------------------------------------------
+
   Future<ReportQueueItem?> getItemById(String id) async {
-    final db = await _dbHelper.database;
+    final Database db = await _dbHelper.database;
     final rows = await db.query('report_queue', where: 'id = ?', whereArgs: [id], limit: 1);
     return rows.isEmpty ? null : ReportQueueItem.fromMap(rows.first);
   }
 
-  Future<List<ReportQueueItem>> getPendingItems() async {
-    final db = await _dbHelper.database;
-    final maps = await db.query(
+  Future<List<ReportQueueItem>> getAllQueueItems() async {
+    final Database db = await _dbHelper.database;
+    final rows = await db.query('report_queue', orderBy: 'created_at DESC');
+    return rows.map(ReportQueueItem.fromMap).toList();
+  }
+
+  /// Mencegah laporan ganda untuk satu hasil identifikasi.
+  Future<bool> hasReportFor(int historyId, ReportType type) async {
+    final Database db = await _dbHelper.database;
+    final rows = await db.query(
+      'report_queue',
+      columns: ['id'],
+      where: 'history_id = ? AND report_type = ?',
+      whereArgs: [historyId, type.value],
+      limit: 1,
+    );
+    return rows.isNotEmpty;
+  }
+
+  @override
+  Future<List<ReportQueueItem>> pendingItems() async {
+    final Database db = await _dbHelper.database;
+    final rows = await db.query(
       'report_queue',
       where: 'upload_status = ?',
       whereArgs: [UploadStatus.pending.value],
-      orderBy: 'created_at ASC',
+      orderBy: 'created_at ASC, rowid ASC',
     );
-    return maps.map(ReportQueueItem.fromMap).toList();
+    return rows.map(ReportQueueItem.fromMap).toList();
   }
 
-  Future<List<ReportQueueItem>> getAllQueueItems() async {
-    final db = await _dbHelper.database;
-    final maps = await db.query('report_queue', orderBy: 'created_at DESC');
-    return maps.map(ReportQueueItem.fromMap).toList();
+  @override
+  Future<int> countPending() async {
+    final Database db = await _dbHelper.database;
+    final int? count = Sqflite.firstIntValue(await db.rawQuery(
+      'SELECT COUNT(*) FROM report_queue WHERE upload_status IN (?, ?)',
+      [UploadStatus.pending.value, UploadStatus.sending.value],
+    ));
+    return count ?? 0;
   }
 
+  // ------------------------------------------------------------------
+  // Status
+  // ------------------------------------------------------------------
+
+  @override
   Future<void> updateStatus(
     String id, {
     required UploadStatus status,
     int? attemptCount,
     String? lastError,
   }) async {
-    final db = await _dbHelper.database;
+    final Database db = await _dbHelper.database;
     await db.update(
       'report_queue',
       {
@@ -95,145 +178,54 @@ class ReportQueueRepository {
     );
   }
 
-  Future<void> retryFailedItem(String id) => updateStatus(
-        id, status: UploadStatus.pending, attemptCount: 0, lastError: null);
-
-  /// Proses berurutan. Jika jaringan gagal, item kembali PENDING agar bisa
-  /// dicoba saat connectivity berubah atau aplikasi dibuka lagi.
-  Future<void> processQueue() async {
-    // One process-wide lock avoids simultaneous sends from AppShell and a
-    // screen-created repository instance. A call during processing requests
-    // one more pass so an item enqueued mid-round is not stranded as PENDING.
-    if (_isProcessingQueue) {
-      _processQueueAgain = true;
-      return;
-    }
-    _isProcessingQueue = true;
-    try {
-      final db = await _dbHelper.database;
-      // Recover records left in SENDING if Android killed the app mid-upload.
-      await db.update(
-        'report_queue',
-        {
-          'upload_status': UploadStatus.pending.value,
-          'last_error': 'Percobaan sebelumnya terhenti; akan dicoba kembali.',
-        },
-        where: 'upload_status = ?',
-        whereArgs: [UploadStatus.sending.value],
-      );
-
-      do {
-        _processQueueAgain = false;
-        final pendingItems = await getPendingItems();
-        for (final item in pendingItems) {
-          await _sendSingleItemWithRetry(item);
-        }
-      } while (_processQueueAgain);
-    } finally {
-      _isProcessingQueue = false;
-    }
-  }
-
-  Future<void> _sendSingleItemWithRetry(ReportQueueItem item) async {
-    await updateStatus(item.id, status: UploadStatus.sending);
-    const int maxAttemptsPerRound = 3;
-    int attemptsThisRound = 0;
-    int totalAttempts = item.attemptCount;
-    String? lastError = item.lastError;
-
-    while (attemptsThisRound < maxAttemptsPerRound) {
-      attemptsThisRound++;
-      totalAttempts++;
-      try {
-        await _uploadToRestApi(item);
-        await updateStatus(item.id, status: UploadStatus.sent,
-            attemptCount: totalAttempts, lastError: null);
-        return;
-      } on DioException catch (error) {
-        lastError = _mapDioErrorToMessage(error);
-        final code = error.response?.statusCode;
-        // Kesalahan payload bersifat permanen sampai pengguna memperbaiki data.
-        if (code == 400 || code == 401 || code == 403 || code == 404 ||
-            code == 405 || code == 409 || code == 413 || code == 415 ||
-            code == 422) {
-          await updateStatus(item.id, status: UploadStatus.failed,
-              attemptCount: totalAttempts, lastError: lastError);
-          return;
-        }
-        if (attemptsThisRound < maxAttemptsPerRound) {
-          await Future<void>.delayed(const Duration(seconds: 2));
-        }
-      } on _PermanentQueueException catch (error) {
-        await updateStatus(item.id, status: UploadStatus.failed,
-            attemptCount: totalAttempts, lastError: error.message);
-        return;
-      } catch (error) {
-        lastError = error.toString();
-        if (attemptsThisRound < maxAttemptsPerRound) {
-          await Future<void>.delayed(const Duration(seconds: 2));
-        }
-      }
-    }
-
-    // Jangan set FAILED untuk gangguan jaringan sementara: retry pada event berikutnya.
-    await updateStatus(item.id, status: UploadStatus.pending,
-        attemptCount: totalAttempts, lastError: lastError ?? 'Belum dapat terhubung ke server.');
-  }
-
-  Future<void> _uploadToRestApi(ReportQueueItem item) async {
-    final file = File(item.imagePath);
-    if (!await file.exists()) {
-      throw const _PermanentQueueException('Berkas citra tidak ditemukan di perangkat.');
-    }
-
-    final formData = FormData.fromMap({
-      'client_id': item.id,
-      'image': await MultipartFile.fromFile(item.imagePath),
-      if (item.aiKey != null) 'ai_key': item.aiKey,
-      if (item.latitude != null) 'latitude': item.latitude,
-      if (item.longitude != null) 'longitude': item.longitude,
-      'created_at': item.createdAt.toUtc().toIso8601String(),
-      'allow_training': item.allowTraining,
-      if (item.confidence != null) 'confidence': item.confidence,
-      if (item.modelVersion != null) 'model_version': item.modelVersion,
-      'coordinate_approximate': item.coordinateApproximate,
-    });
-
-    // Base URL berakhir dengan /api/v1/. Jangan awali endpoint dengan slash,
-    // karena Dio akan membuang path /api/v1/.
-    final String endpoint = item.reportType == ReportType.unknownImage
-        ? 'unknown-images/'
-        : 'findings/';
-
-    await _dio.post<Object?>(
-      endpoint,
-      data: formData,
-      options: Options(
-        sendTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 20),
-      ),
+  @override
+  Future<void> recoverInterrupted() async {
+    final Database db = await _dbHelper.database;
+    await db.update(
+      'report_queue',
+      {
+        'upload_status': UploadStatus.pending.value,
+        'last_error': 'Percobaan sebelumnya terhenti; dicoba kembali.',
+      },
+      where: 'upload_status = ?',
+      whereArgs: [UploadStatus.sending.value],
     );
   }
 
-  String _mapDioErrorToMessage(DioException error) {
-    final code = error.response?.statusCode;
-    if (error.type == DioExceptionType.connectionTimeout ||
-        error.type == DioExceptionType.sendTimeout ||
-        error.type == DioExceptionType.receiveTimeout ||
-        error.type == DioExceptionType.connectionError) {
-      return 'Jaringan tidak tersedia atau server belum dapat dijangkau.';
-    }
-    if (code == 400 || code == 413 || code == 422) {
-      final detail = error.response?.data;
-      return 'Server menolak data laporan ($code): $detail';
-    }
-    if (code == 401 || code == 403) return 'Permintaan tidak diizinkan ($code).';
-    if (code == 429) return 'Terlalu banyak permintaan. Coba lagi nanti.';
-    return 'Kegagalan layanan server (${code ?? "unknown"}).';
+  Future<void> retryFailedItem(String id) =>
+      updateStatus(id, status: UploadStatus.pending, attemptCount: 0, lastError: null);
+
+  Future<void> retryAllFailed() async {
+    final Database db = await _dbHelper.database;
+    await db.update(
+      'report_queue',
+      {'upload_status': UploadStatus.pending.value, 'attempt_count': 0, 'last_error': null},
+      where: 'upload_status = ?',
+      whereArgs: [UploadStatus.failed.value],
+    );
+  }
+
+  // ------------------------------------------------------------------
+  // Pengiriman
+  // ------------------------------------------------------------------
+
+  bool get isProcessing => _runner.isRunning;
+
+  /// Mengirim antrean secara berurutan. Aman dipanggil berkali-kali.
+  ///
+  /// Mengembalikan null bila putaran lain sedang berjalan; hasil putaran
+  /// itu tetap diumumkan lewat [results].
+  Future<QueueRunResult?> processQueue() async {
+    final QueueRunResult? result = await _runner.run();
+    if (result != null) _results.add(result);
+    return result;
   }
 }
 
-class _PermanentQueueException implements Exception {
-  const _PermanentQueueException(this.message);
+class ReportQueueException implements Exception {
+  const ReportQueueException(this.message);
   final String message;
+
+  @override
+  String toString() => message;
 }

@@ -4,16 +4,20 @@ import 'package:flutter/services.dart';
 import '../identification_theme.dart';
 
 /// Layar gagal identifikasi (non-flora / skor di bawah ambang portal).
-/// Hanya teks dan tombol kembali.
+/// Berisi penjelasan, tombol kirim foto untuk ditinjau, dan tombol kembali.
 class UnidentifiedResultView extends StatelessWidget {
   const UnidentifiedResultView({
     super.key,
     required this.message,
     required this.onBack,
+    this.onReport,
   });
 
   final String message;
   final VoidCallback onBack;
+
+  /// Bila diisi, tampil tombol untuk mengirim foto sebagai flora tidak dikenali.
+  final VoidCallback? onReport;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +60,23 @@ class UnidentifiedResultView extends StatelessWidget {
                     height: 1.5,
                   ),
                 ),
+                if (onReport != null) ...[
+                  const SizedBox(height: 28),
+                  FilledButton.icon(
+                    onPressed: onReport,
+                    icon: const Icon(Icons.outbox_outlined),
+                    label: const Text('Ini flora? Kirim untuk ditinjau'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Foto hanya dikirim setelah Anda menyetujuinya.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Color(0xFF5C5C5C)),
+                  ),
+                ],
                 const Spacer(flex: 2),
               ],
             ),

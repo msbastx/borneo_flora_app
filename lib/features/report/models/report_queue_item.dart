@@ -56,6 +56,7 @@ class ReportQueueItem {
   /// Diisi dari formulir profil saat laporan dibuat.
   final String? reporterName;
   final String? reporterEmail;
+  final String? reporterPhone;
 
   const ReportQueueItem({
     required this.id,
@@ -76,6 +77,7 @@ class ReportQueueItem {
     this.scientificName,
     this.reporterName,
     this.reporterEmail,
+    this.reporterPhone,
   });
 
   bool get hasCoordinates => latitude != null && longitude != null;
@@ -104,6 +106,7 @@ class ReportQueueItem {
         scientificName: scientificName,
         reporterName: reporterName,
         reporterEmail: reporterEmail,
+        reporterPhone: reporterPhone,
       );
 
   /// Kolom teks untuk permintaan multipart (tanpa berkas citra).
@@ -136,6 +139,7 @@ class ReportQueueItem {
     if (includeReporter) {
       put('reporter_name', reporterName);
       put('reporter_email', reporterEmail);
+      put('reporter_phone', reporterPhone);
     }
     return fields;
   }
@@ -159,6 +163,7 @@ class ReportQueueItem {
         'scientific_name': scientificName,
         'reporter_name': reporterName,
         'reporter_email': reporterEmail,
+        'reporter_phone': reporterPhone,
       };
 
   factory ReportQueueItem.fromMap(Map<String, dynamic> map) => ReportQueueItem(
@@ -180,5 +185,6 @@ class ReportQueueItem {
         scientificName: map['scientific_name'] as String?,
         reporterName: map['reporter_name'] as String?,
         reporterEmail: map['reporter_email'] as String?,
+        reporterPhone: map['reporter_phone'] as String?,
       );
 }

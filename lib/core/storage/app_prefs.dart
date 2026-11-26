@@ -12,6 +12,7 @@ class AppPrefs {
   static const String _kProfileAsked = 'reporter_profile_asked';
   static const String _kReporterName = 'reporter_name';
   static const String _kReporterEmail = 'reporter_email';
+  static const String _kReporterPhone = 'reporter_phone';
   static const String _kDatasetConsent = 'reporter_dataset_consent';
 
   static Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
@@ -38,6 +39,7 @@ class AppPrefs {
     return ReporterProfile(
       name: prefs.getString(_kReporterName) ?? '',
       email: prefs.getString(_kReporterEmail) ?? '',
+      phone: prefs.getString(_kReporterPhone) ?? '',
       datasetConsent: prefs.getBool(_kDatasetConsent) ?? false,
     );
   }
@@ -47,6 +49,7 @@ class AppPrefs {
     final ReporterProfile p = profile.normalized();
     await prefs.setString(_kReporterName, p.name);
     await prefs.setString(_kReporterEmail, p.email);
+    await prefs.setString(_kReporterPhone, p.phone);
     await prefs.setBool(_kDatasetConsent, p.datasetConsent);
     await prefs.setBool(_kProfileAsked, true);
   }

@@ -49,20 +49,27 @@ class _ReporterProfileDialogState extends State<_ReporterProfileDialog> {
       TextEditingController(text: widget.initial.name);
   late final TextEditingController _email =
       TextEditingController(text: widget.initial.email);
+  late final TextEditingController _phone =
+      TextEditingController(text: widget.initial.phone);
   late bool _consent = widget.initial.datasetConsent;
 
   @override
   void dispose() {
     _name.dispose();
     _email.dispose();
+    _phone.dispose();
     super.dispose();
   }
 
   void _save() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     Navigator.of(context).pop(
-      ReporterProfile(name: _name.text, email: _email.text, datasetConsent: _consent)
-          .normalized(),
+      ReporterProfile(
+        name: _name.text,
+        email: _email.text,
+        phone: _phone.text,
+        datasetConsent: _consent,
+      ).normalized(),
     );
   }
 
@@ -79,7 +86,7 @@ class _ReporterProfileDialogState extends State<_ReporterProfileDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Nama dan email disertakan pada laporan yang Anda kirim, agar '
+                'Nama dan kontak disertakan pada laporan yang Anda kirim, agar '
                 'kurator dapat menghubungi Anda bila perlu konfirmasi.',
                 style: TextStyle(fontSize: 13, height: 1.4, color: AppColors.mutedGrey),
               ),
@@ -100,13 +107,25 @@ class _ReporterProfileDialogState extends State<_ReporterProfileDialog> {
               TextFormField(
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.done,
+                textInputAction: TextInputAction.next,
                 autocorrect: false,
                 decoration: const InputDecoration(
                   labelText: 'Email (opsional)',
                   border: OutlineInputBorder(),
                 ),
                 validator: ReporterProfile.validateEmail,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _phone,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.done,
+                decoration: const InputDecoration(
+                  labelText: 'Nomor telepon / WhatsApp (opsional)',
+                  hintText: '08xxxxxxxxxx',
+                  border: OutlineInputBorder(),
+                ),
+                validator: ReporterProfile.validatePhone,
                 onFieldSubmitted: (_) => _save(),
               ),
               const SizedBox(height: 8),

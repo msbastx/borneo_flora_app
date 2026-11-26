@@ -112,6 +112,7 @@ class ReportFlow {
         modelVersion: source.modelVersion,
         reporterName: _orNull(profile.name),
         reporterEmail: _orNull(profile.email),
+        reporterPhone: _orNull(profile.phone),
       ),
       note: coords == null ? 'Koordinat tidak disertakan karena lokasi tidak tersedia.' : null,
     );
@@ -183,6 +184,7 @@ class ReportFlow {
       modelVersion: source.modelVersion,
       reporterName: _orNull(profile.name),
       reporterEmail: _orNull(profile.email),
+      reporterPhone: _orNull(profile.phone),
     ));
   }
 
@@ -259,6 +261,7 @@ class ReportFlow {
           modelVersion: source.modelVersion,
           reporterName: _orNull(profile.name),
           reporterEmail: _orNull(profile.email),
+          reporterPhone: _orNull(profile.phone),
         ),
         announce: announce,
       );

@@ -21,7 +21,7 @@ class AppDatabase {
 
     return openDatabase(
       path,
-      version: 4,
+      version: 5,
       onConfigure: (db) async => db.execute('PRAGMA foreign_keys = ON'),
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
@@ -81,6 +81,7 @@ class AppDatabase {
         scientific_name TEXT,
         reporter_name TEXT,
         reporter_email TEXT,
+        reporter_phone TEXT,
         FOREIGN KEY (history_id) REFERENCES identification_history (id) ON DELETE SET NULL
       )
     ''');
@@ -99,6 +100,7 @@ class AppDatabase {
     // v1: original schema. v2 adds report fields; v3 normalizes history rows
     // and adds the candidate label required by identification_suggestion.
     // v4 adds the dataset label and the reporter identity to report_queue.
+    // v5 adds the reporter phone number.
     if (oldVersion < 2) {
       await db.execute(
         'ALTER TABLE report_queue ADD COLUMN allow_training INTEGER NOT NULL DEFAULT 0',
@@ -161,6 +163,10 @@ class AppDatabase {
       await db.execute('ALTER TABLE report_queue ADD COLUMN scientific_name TEXT');
       await db.execute('ALTER TABLE report_queue ADD COLUMN reporter_name TEXT');
       await db.execute('ALTER TABLE report_queue ADD COLUMN reporter_email TEXT');
+    }
+
+    if (oldVersion < 5) {
+      await db.execute('ALTER TABLE report_queue ADD COLUMN reporter_phone TEXT');
     }
   }
 

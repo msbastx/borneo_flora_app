@@ -242,12 +242,14 @@ void main() {
         longitude: 116.8312,
         reporterName: 'Siti',
         reporterEmail: 'siti@example.com',
+        reporterPhone: '+6281234567890',
       ).formFields();
       expect(f['latitude'], '-1.2654');
       expect(f['longitude'], '116.8312');
       expect(f['ai_key'], '10');
       expect(f['reporter_name'], 'Siti');
       expect(f['reporter_email'], 'siti@example.com');
+      expect(f['reporter_phone'], '+6281234567890');
       expect(f['created_at'], '2026-11-26T02:00:00.000Z');
       expect(f.containsKey('scientific_name'), isFalse);
     });
@@ -294,6 +296,7 @@ void main() {
         scientificName: 'Shorea',
         reporterName: 'A',
         reporterEmail: 'a@b.co',
+        reporterPhone: '081234567890',
       );
       final copy = ReportQueueItem.fromMap(original.toMap());
       expect(copy.toMap(), equals(original.toMap()));
@@ -309,6 +312,15 @@ void main() {
       expect(ReporterProfile.validateEmail('siti@example.com'), isNull);
       expect(ReporterProfile.validateEmail('siti@'), isNotNull);
       expect(ReporterProfile.validateEmail('siti example.com'), isNotNull);
+    });
+
+    test('validasi dan normalisasi nomor telepon', () {
+      expect(ReporterProfile.validatePhone(''), isNull);
+      expect(ReporterProfile.validatePhone('0812-3456-7890'), isNull);
+      expect(ReporterProfile.validatePhone('+62 812 3456 7890'), isNull);
+      expect(ReporterProfile.validatePhone('12345'), isNotNull);
+      expect(ReporterProfile.validatePhone('0812abc'), isNotNull);
+      expect(ReporterProfile.normalizePhone('+62 (812) 3456-7890'), '+6281234567890');
     });
 
     test('normalisasi spasi dan huruf email', () {

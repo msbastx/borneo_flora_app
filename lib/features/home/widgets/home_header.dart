@@ -101,6 +101,24 @@ class HomeHeader extends StatelessWidget {
                   ),
                 ),
                 PopupMenuItem(
+                  value: 'profile',
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.person_outline),
+                    title: Text('Profil pelapor'),
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'reports',
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.outbox_outlined),
+                    title: Text('Status laporan'),
+                  ),
+                ),
+                PopupMenuItem(
                   value: 'settings',
                   child: ListTile(
                     dense: true,

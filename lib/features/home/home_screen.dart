@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/flora_repository.dart';
 import '../../data/models/flora_item.dart';
+import 'flora_index_screen.dart';
 import 'widgets/flora_index_header.dart';
 import 'widgets/flora_row.dart';
 import 'widgets/home_header.dart';
@@ -48,6 +49,25 @@ class _FloraHomeScreenState extends State<FloraHomeScreen> {
     setState(() {
       _floraFuture = _loadFlora();
     });
+  }
+
+  /// Jumlah flora yang tampil di Home. Daftar lengkap dibuka di halaman sendiri.
+  static const int _previewCount = 5;
+
+  void _openFullIndex(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          backgroundColor: AppColors.base200,
+          appBar: AppBar(
+            backgroundColor: AppColors.base200,
+            surfaceTintColor: Colors.transparent,
+            title: const Text('Indeks Flora'),
+          ),
+          body: FloraIndexScreen(repository: _repository),
+        ),
+      ),
+    );
   }
 
   @override
@@ -172,7 +192,20 @@ class _FloraHomeScreenState extends State<FloraHomeScreen> {
                           onGallery: widget.onOpenGallery,
                         ),
                         const SizedBox(height: 32),
-                        FloraIndexHeader(count: flora.length),
+                        FloraIndexHeader(
+                          count: flora.length,
+                          onTap: () => _openFullIndex(context),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Flora yang dapat dikenali model identifikasi.',
+                          style: AppText.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.mutedGrey,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                       ],
                     ),
                   ),
@@ -180,10 +213,31 @@ class _FloraHomeScreenState extends State<FloraHomeScreen> {
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   sliver: SliverList.builder(
-                    itemCount: flora.length,
+                    itemCount: flora.length < _previewCount
+                        ? flora.length
+                        : _previewCount,
                     itemBuilder: (_, i) => FloraRow(item: flora[i]),
                   ),
                 ),
+                if (flora.length > _previewCount)
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _openFullIndex(context),
+                        icon: const Icon(Icons.search),
+                        label: Text('Cari & lihat semua ${flora.length} flora'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.emerald700,
+                          side: const BorderSide(color: AppColors.emerald200),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 SliverToBoxAdapter(
                   child: SizedBox(
                     height: MediaQuery.paddingOf(context).bottom + 96,

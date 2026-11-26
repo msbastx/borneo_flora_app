@@ -75,8 +75,9 @@ class HistoryDetailScreen extends StatelessWidget {
       modelVersion: record.modelVersion ?? IdentificationConfig.modelVersion,
     );
 
+    // Laporan berbasis spesies cukup melewati ambang kandidat; kurator tetap meninjaunya.
     final bool scoreAccepted =
-        record.confidence >= IdentificationConfig.acceptanceThreshold;
+        record.confidence >= IdentificationConfig.confidenceThreshold;
 
     if (scoreAccepted && item?.isVerified == true && item?.endemicStatusKnown == true) {
       if (item!.isEndemic) {
@@ -91,7 +92,7 @@ class HistoryDetailScreen extends StatelessWidget {
     // sebagai flora yang belum dikenali agar ditinjau kurator.
     final String reason = !scoreAccepted
         ? 'Confidence hasil ini (${(record.confidence * 100).toStringAsFixed(2)}%) '
-            'belum melewati ambang ${(IdentificationConfig.acceptanceThreshold * 100).toStringAsFixed(2)}%. '
+            'belum melewati ambang kandidat ${(IdentificationConfig.confidenceThreshold * 100).toStringAsFixed(0)}%. '
             'Laporan akan dikirim sebagai kandidat untuk ditinjau, bukan klaim identifikasi.'
         : item?.isVerified == true
             ? 'Status endemik untuk spesies ini belum diketahui. Citra dapat dikirim '

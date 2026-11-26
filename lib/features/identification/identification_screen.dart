@@ -59,7 +59,7 @@ class IdentificationScreen extends StatelessWidget {
       context,
       source,
       reasonText: 'Skor kandidat tertinggi ${top.prediction.percentLabel} belum melewati '
-          'ambang penerimaan ${(IdentificationConfig.acceptanceThreshold * 100).toStringAsFixed(2)}%. '
+          'ambang kandidat ${(IdentificationConfig.confidenceThreshold * 100).toStringAsFixed(0)}%. '
           'Bila ini memang flora, kirimkan fotonya agar kurator dapat meninjau dan '
           'menambahkannya ke dataset.',
     );
@@ -88,17 +88,19 @@ class IdentificationScreen extends StatelessWidget {
       return;
     }
 
+    // Laporan berbasis spesies cukup melewati ambang kandidat, karena kurator
+    // tetap meninjau setiap laporan sebelum tampil di peta.
     final bool acceptedForSpeciesFlow =
-        top.prediction.probability >= IdentificationConfig.acceptanceThreshold &&
+        top.prediction.probability >= IdentificationConfig.confidenceThreshold &&
         top.item?.isVerified == true;
 
     // Skor rendah ATAU metadata server belum terverifikasi. Status endemik
     // tidak pernah disimpulkan dari label model saja.
     if (!acceptedForSpeciesFlow) {
       final String reasonText = top.prediction.probability <
-              IdentificationConfig.acceptanceThreshold
+              IdentificationConfig.confidenceThreshold
           ? 'Skor kandidat tertinggi ${top.prediction.percentLabel} belum melewati '
-              'ambang penerimaan ${(IdentificationConfig.acceptanceThreshold * 100).toStringAsFixed(2)}%. '
+              'ambang kandidat ${(IdentificationConfig.confidenceThreshold * 100).toStringAsFixed(0)}%. '
               'Gambar bisa saja bukan flora atau spesies belum dikenali dengan cukup kuat.'
           : 'Model memberi skor ${top.prediction.percentLabel} untuk ${top.prediction.label}, '
               'tetapi metadata kelas ini belum terverifikasi di katalog server. Skor tinggi '
@@ -139,8 +141,11 @@ class IdentificationScreen extends StatelessWidget {
         builder: (context, _) {
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
+            // Tiga tingkat: di bawah ambang kandidat -> tidak dapat diidentifikasi,
+            // lolos ambang penerimaan + metadata terverifikasi -> hasil,
+            // selain itu -> daftar kandidat beserta skornya.
             child: controller.showsResult
-                ? (!controller.passesAcceptanceThreshold
+                ? (!controller.passesCandidateThreshold
                     ? UnidentifiedResultView(
                         key: const ValueKey('unidentified-result'),
                         message: 'Gambar ini bukan flora yang dapat dikenali '

@@ -9,6 +9,12 @@ class FloraRow extends StatelessWidget {
 
   final FloraItem item;
 
+  /// Nama umum sering sama dengan nama ilmiah (metadata belum lengkap).
+  /// Dalam kasus itu nama hanya ditulis sekali.
+  bool get _showScientificName =>
+      item.scientificName.trim().toLowerCase() !=
+      item.commonName.trim().toLowerCase();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -38,6 +44,7 @@ class FloraRow extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+                if (_showScientificName) ...[
                 const SizedBox(height: 2),
                 Text(
                   item.scientificName,
@@ -47,6 +54,7 @@ class FloraRow extends StatelessWidget {
                     color: AppColors.mutedGrey,
                   ).copyWith(fontStyle: FontStyle.italic),
                 ),
+                ],
               ],
             ),
           ),

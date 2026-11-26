@@ -155,6 +155,12 @@ class _AppShellState extends State<AppShell> {
           ),
         );
         break;
+      case 'profile':
+        await showReporterProfileDialog(context);
+        break;
+      case 'reports':
+        _openReportStatus();
+        break;
       case 'settings':
         await showModalBottomSheet<void>(
           context: context,

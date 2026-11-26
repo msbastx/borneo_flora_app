@@ -9,7 +9,10 @@ abstract final class IdentificationConfig {
   /// Jumlah kandidat teratas yang ditampilkan.
   static const int topK = 4;
 
-  /// Probabilitas minimum agar hasil dianggap dikenali (0.0 sampai 1.0).
+  /// Probabilitas minimum agar hasil ditampilkan sebagai kandidat flora
+  /// (0.0 sampai 1.0). Di bawah ambang ini layar "Tidak dapat diidentifikasi"
+  /// yang tampil. Ambang ini juga menjadi syarat minimum laporan berbasis spesies
+  /// (temuan endemik dan foto dataset), karena semua laporan tetap ditinjau kurator.
   static const double confidenceThreshold = 0.45;
 
   /// Probabilitas minimum untuk label "Keyakinan tinggi" di kartu UI.

@@ -104,6 +104,11 @@ class IdentificationController extends ChangeNotifier {
       (topResult?.prediction.probability ?? 0) >=
       IdentificationConfig.acceptanceThreshold;
 
+  /// Skor tertinggi cukup untuk ditampilkan sebagai kandidat flora.
+  bool get passesCandidateThreshold =>
+      (topResult?.prediction.probability ?? 0) >=
+      IdentificationConfig.confidenceThreshold;
+
   /// Sistem hanya menyebut hasil teridentifikasi bila skor model melewati
   /// ambang DAN katalog memiliki metadata yang diverifikasi.
   /// Metadata fallback/placeholder tidak boleh menentukan status endemik.
@@ -326,7 +331,9 @@ class IdentificationController extends ChangeNotifier {
     final File? image = _image;
     final item = top?.item;
     if (top == null || image == null || item == null) return;
-    if (!isConfident || !item.endemicStatusKnown || item.isEndemic) return;
+    // Cukup melewati ambang kandidat: foto dataset selalu ditinjau kurator.
+    if (!passesCandidateThreshold || !item.isVerified) return;
+    if (!item.endemicStatusKnown || item.isEndemic) return;
     try {
       _reports ??= ReportFlow();
       await _reports!.autoSubmitSighting(ReportSource(
